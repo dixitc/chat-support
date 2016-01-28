@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Embtest
 
 This README outlines the details of collaborating on this Ember application.
@@ -51,3 +52,7 @@ Specify what it takes to deploy your app.
   * [ember inspector for chrome](https://chrome.google.com/webstore/detail/ember-inspector/bmdblncegkenkacieihfhpjfppoconhi)
   * [ember inspector for firefox](https://addons.mozilla.org/en-US/firefox/addon/ember-inspector/)
 
+=======
+# chat-support
+This is the support facing ember app
+>>>>>>> 71f8ea5e13343ee8b5d85e53d2e6e067464564ff
