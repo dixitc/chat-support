@@ -1,5 +1,15 @@
-{{#paper-toolbar}}
-
+{{#paper-toolbar class="toolbar"}}
+	{{#if session.isAuthenticated}}
+		{{#paper-button class="toolbar-options" action=(action "logout") }}
+		LOGOUT
+		{{/paper-button}}
+	{{else}}
+		{{#paper-button class="toolbar-options"}}
+			{{#link-to 'login'}}
+				LOGIN
+			{{/link-to}}
+		{{/paper-button}}
+	{{/if}}
 {{/paper-toolbar}}
-
+<h1>WELCOME TO CHAT-SUPPORT</h1>
 {{outlet}}
