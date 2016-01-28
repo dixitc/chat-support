@@ -8465,15 +8465,6 @@ md-backdrop {
   md-backdrop.md-opaque.md-default-theme.ng-leave.md-opaque.md-default-theme.ng-leave-active {
     background-color: rgba(33, 33, 33, 0); }
 
-.login-card {
-  width: 400px;
-  margin: auto;
-  padding: 20px;
-  margin-top: 100px; }
-
-.login-options {
-  width: 50%; }
-
 md-toolbar.md-default-theme {
   background-color: #3f51b5;
   color: rgba(255, 255, 255, 0.87);
@@ -8494,6 +8485,19 @@ md-toolbar.md-default-theme {
   /* max-height: 64px; */
   padding: 0 16px;
   margin: 0; }
+
+.login-card {
+  width: 400px;
+  margin: auto;
+  padding: 20px;
+  margin-top: 100px; }
+  .login-card md-toolbar.md-default-theme {
+    background: white; }
+  .login-card .login-options {
+    width: 50%;
+    color: #3f51b5; }
+  .login-card md-toolbar.md-default-theme .md-button {
+    color: #3f51b5; }
 
 .toolbar-options {
   float: right; }
