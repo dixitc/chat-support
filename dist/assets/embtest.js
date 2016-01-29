@@ -854,7 +854,7 @@ define("embtest/templates/application", ["exports"], function (exports) {
             dom.insertBoundary(fragment, null);
             return morphs;
           },
-          statements: [["block", "paper-button", [], ["class", "toolbar-options", "action", ["subexpr", "action", ["logout"], [], ["loc", [null, [3, 49], [3, 66]]]]], 0, null, ["loc", [null, [3, 2], [5, 19]]]]],
+          statements: [["block", "paper-button", [], ["class", "toolbar-options", "signup", false, "action", ["subexpr", "action", ["logout"], [], ["loc", [null, [3, 62], [3, 79]]]]], 0, null, ["loc", [null, [3, 2], [5, 19]]]]],
           locals: [],
           templates: [child0]
         };
@@ -970,7 +970,7 @@ define("embtest/templates/application", ["exports"], function (exports) {
             dom.insertBoundary(fragment, null);
             return morphs;
           },
-          statements: [["block", "paper-button", [], ["class", "toolbar-options"], 0, null, ["loc", [null, [7, 2], [11, 19]]]]],
+          statements: [["block", "paper-button", [], ["class", "toolbar-options", "signup", false], 0, null, ["loc", [null, [7, 2], [11, 19]]]]],
           locals: [],
           templates: [child0]
         };

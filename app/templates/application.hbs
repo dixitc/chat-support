@@ -1,10 +1,10 @@
 {{#paper-toolbar class="toolbar"}}
 	{{#if session.isAuthenticated}}
-		{{#paper-button class="toolbar-options" action=(action "logout") }}
+		{{#paper-button class="toolbar-options" signup=false action=(action "logout") }}
 		LOGOUT
 		{{/paper-button}}
 	{{else}}
-		{{#paper-button class="toolbar-options"}}
+		{{#paper-button class="toolbar-options" signup=false}}
 			{{#link-to 'login'}}
 				LOGIN
 			{{/link-to}}
