@@ -86633,7 +86633,7 @@ define('ember-paper/components/paper-button', ['exports', 'ember', 'ember-paper/
     attributeBindings: ['target', 'action', 'type'],
     tagName: 'button',
     themed: true,
-    classNameBindings: ['raised:md-raised', 'icon-button:md-icon-button', 'focus:md-focused', 'themed:md-default-theme', 'themed:md-button'],
+    classNameBindings: ['signup:dark:light', 'raised:md-raised', 'icon-button:md-icon-button', 'focus:md-focused', 'themed:md-default-theme', 'themed:md-button'],
 
     noSpan: _ember['default'].computed('no-span', function () {
       return this.get('no-span');

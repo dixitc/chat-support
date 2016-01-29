@@ -368,6 +368,9 @@ define('embtest/controllers/login', ['exports', 'ember'], function (exports, _em
         session: _ember['default'].inject.service('session'),
         authenticator: 'authenticator:custom',
         signup: false,
+        login: _ember['default'].computed('params.[]', function () {
+            return !this.get('signup');
+        }).property('signup'),
         actions: {
             authenticate: function authenticate() {
                 var _this = this;
@@ -5538,7 +5541,7 @@ define("embtest/templates/login", ["exports"], function (exports) {
                 },
                 "end": {
                   "line": 3,
-                  "column": 77
+                  "column": 90
                 }
               },
               "moduleName": "embtest/templates/login.hbs"
@@ -5574,7 +5577,7 @@ define("embtest/templates/login", ["exports"], function (exports) {
                 },
                 "end": {
                   "line": 4,
-                  "column": 79
+                  "column": 93
                 }
               },
               "moduleName": "embtest/templates/login.hbs"
@@ -5638,7 +5641,7 @@ define("embtest/templates/login", ["exports"], function (exports) {
             morphs[1] = dom.createMorphAt(fragment, 3, 3, contextualElement);
             return morphs;
           },
-          statements: [["block", "paper-button", [], ["class", "login-options", "action", ["subexpr", "action", ["togglesignup"], [], ["loc", [null, [3, 47], [3, 70]]]]], 0, null, ["loc", [null, [3, 2], [3, 94]]]], ["block", "paper-button", [], ["class", "login-options", "action", ["subexpr", "action", ["togglesignup"], [], ["loc", [null, [4, 47], [4, 70]]]]], 1, null, ["loc", [null, [4, 2], [4, 96]]]]],
+          statements: [["block", "paper-button", [], ["class", "login-options", "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [3, 47], [3, 52]]]]], [], []], "action", ["subexpr", "action", ["togglesignup"], [], ["loc", [null, [3, 60], [3, 83]]]]], 0, null, ["loc", [null, [3, 2], [3, 107]]]], ["block", "paper-button", [], ["class", "login-options", "signup", ["subexpr", "@mut", [["get", "signup", ["loc", [null, [4, 47], [4, 53]]]]], [], []], "action", ["subexpr", "action", ["togglesignup"], [], ["loc", [null, [4, 61], [4, 84]]]]], 1, null, ["loc", [null, [4, 2], [4, 110]]]]],
           locals: [],
           templates: [child0, child1]
         };
@@ -5967,7 +5970,7 @@ catch(err) {
 
 /* jshint ignore:start */
 if (!runningTests) {
-  require("embtest/app")["default"].create({"name":"embtest","version":"0.0.0+3ac5eb98"});
+  require("embtest/app")["default"].create({"name":"embtest","version":"0.0.0+87381ab0"});
 }
 /* jshint ignore:end */
 //# sourceMappingURL=embtest.map

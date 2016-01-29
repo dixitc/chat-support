@@ -1,7 +1,7 @@
 {{#paper-card class="login-card"}}
 	{{#paper-toolbar}}
-		{{#paper-button class="login-options" action=(action "togglesignup")}}LOGIN{{/paper-button}}
-		{{#paper-button class="login-options" action=(action "togglesignup")}}SIGN UP{{/paper-button}}
+		{{#paper-button class="login-options" signup=login action=(action "togglesignup")}}LOGIN{{/paper-button}}
+		{{#paper-button class="login-options" signup=signup action=(action "togglesignup")}}SIGN UP{{/paper-button}}
 	{{/paper-toolbar}}
 	{{paper-input label="Name" value=name}}
 	
