@@ -1,6 +1,6 @@
 /* jshint node: true */
 
-module.exports = function(environment) {
+module.exports = function( environment ) {
   var ENV = {
     modulePrefix: 'embtest',
     environment: environment,
@@ -19,27 +19,28 @@ module.exports = function(environment) {
     }
   };
 
-  ENV['ember-simple-auth'] = {
+  ENV[ 'ember-simple-auth' ] = {
     store: 'ember-simple-auth-session-store:local-storage',
     authorizer: 'authorizer:custom',
     authenticationRoute: 'login',
-    crossOriginWhitelist: ['http://localhost:3000/'],
-    routeAfterAuthentication: 'profile'
-};
+    crossOriginWhitelist: [ 'http://localhost:3000/' ],
+    routeAfterAuthentication: 'dashboard'
+  };
 
-  if (environment === 'development') {
+  if ( environment === 'development' ) {
     // ENV.APP.LOG_RESOLVER = true;
     // ENV.APP.LOG_ACTIVE_GENERATION = true;
     // ENV.APP.LOG_TRANSITIONS = true;
     // ENV.APP.LOG_TRANSITIONS_INTERNAL = true;
     // ENV.APP.LOG_VIEW_LOOKUPS = true;
-      ENV['ember-simple-auth'] = {
-    serverTokenEndpoint: 'http://localhost:3000/login',
-    routeAfterAuthentication: 'profile'
-  }
+    ENV[ 'ember-simple-auth' ] = {
+      authenticationRoute: 'login',
+      serverTokenEndpoint: 'http://localhost:3000/login',
+      routeAfterAuthentication: 'dashboard'
+    }
   }
 
-  if (environment === 'test') {
+  if ( environment === 'test' ) {
     // Testem prefers this...
     ENV.baseURL = '/';
     ENV.locationType = 'none';
@@ -51,7 +52,7 @@ module.exports = function(environment) {
     ENV.APP.rootElement = '#ember-testing';
   }
 
-  if (environment === 'production') {
+  if ( environment === 'production' ) {
 
   }
 

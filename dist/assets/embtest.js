@@ -3,6 +3,12 @@
 
 /* jshint ignore:end */
 
+define('embtest/adapters/application', ['exports', 'ember-data', 'ember-simple-auth/mixins/data-adapter-mixin'], function (exports, _emberData, _emberSimpleAuthMixinsDataAdapterMixin) {
+	exports['default'] = _emberData['default'].RESTAdapter.extend(_emberSimpleAuthMixinsDataAdapterMixin['default'], {
+		host: 'http://172.16.1.168:3000',
+		authorizer: 'authorizer:custom'
+	});
+});
 define('embtest/app', ['exports', 'ember', 'embtest/resolver', 'ember/load-initializers', 'embtest/config/environment'], function (exports, _ember, _embtestResolver, _emberLoadInitializers, _embtestConfigEnvironment) {
 
   var App = undefined;
@@ -68,14 +74,15 @@ define('embtest/authenticators/custom', ['exports', 'ember', 'ember-simple-auth/
 });
 // app/authenticators/custom.js
 define('embtest/authorizers/custom', ['exports', 'ember', 'ember-simple-auth/authorizers/base'], function (exports, _ember, _emberSimpleAuthAuthorizersBase) {
-    exports['default'] = _emberSimpleAuthAuthorizersBase['default'].extend({
-        authorize: function authorize(jqXHR, requestOptions) {
-            var accessToken = this.get('session.content.secure.token');
-            if (this.get('session.isAuthenticated') && !_ember['default'].isEmpty(accessToken)) {
-                jqXHR.setRequestHeader('Authorization', 'Bearer ' + accessToken);
-            }
-        }
-    });
+	exports['default'] = _emberSimpleAuthAuthorizersBase['default'].extend({
+		authorize: function authorize(data, block) {
+			var token = data.token;
+
+			if (!_ember['default'].isEmpty(token)) {
+				block('Authorization', 'Bearer ' + token);
+			}
+		}
+	});
 });
 // app/authorizers/custom.js
 define('embtest/components/animated-if', ['exports', 'ember'], function (exports, _ember) {
@@ -363,28 +370,66 @@ define('embtest/controllers/application', ['exports', 'ember'], function (export
 define('embtest/controllers/array', ['exports', 'ember'], function (exports, _ember) {
   exports['default'] = _ember['default'].Controller;
 });
-define('embtest/controllers/login', ['exports', 'ember'], function (exports, _ember) {
-    exports['default'] = _ember['default'].Controller.extend({
-        session: _ember['default'].inject.service('session'),
-        authenticator: 'authenticator:custom',
-        signup: false,
-        login: _ember['default'].computed('params.[]', function () {
-            return !this.get('signup');
-        }).property('signup'),
-        actions: {
-            authenticate: function authenticate() {
-                var _this = this;
+define('embtest/controllers/dashboard', ['exports', 'ember'], function (exports, _ember) {
+	exports['default'] = _ember['default'].Controller.extend({
+		actions: {
+			testprotectedApi: function testprotectedApi() {
+				var self = this;
+				var user = this.store.createRecord('user', {
+					name: 'asdfasdf',
+					email: 'asdfasdf'
 
-                var credentials = this.getProperties('name', 'password');
-                this.get('session').authenticate('authenticator:custom', credentials)['catch'](function (message) {
-                    _this.set('errorMessage', message);
-                });
-            },
-            togglesignup: function togglesignup() {
-                this.toggleProperty('signup');
-            }
-        }
-    });
+				});
+
+				user.save().then(function () {
+					//this is basically what happens when you trigger the LoginControllerMixin's "authenticate" action
+
+				});
+			}
+		}
+	});
+});
+define('embtest/controllers/login', ['exports', 'ember'], function (exports, _ember) {
+	exports['default'] = _ember['default'].Controller.extend({
+		session: _ember['default'].inject.service('session'),
+		authenticator: 'authenticator:custom',
+		signup: false,
+		login: _ember['default'].computed('params.[]', function () {
+			return !this.get('signup');
+		}).property('signup'),
+		actions: {
+			authenticate: function authenticate() {
+				var _this = this;
+
+				var credentials = this.getProperties('name', 'password');
+				this.get('session').authenticate('authenticator:custom', credentials)['catch'](function (message) {
+					_this.set('errorMessage', message);
+				});
+			},
+			togglesignup: function togglesignup() {
+				this.toggleProperty('signup');
+			},
+			registerUser: function registerUser() {
+				var self = this;
+				var user = this.store.createRecord('user', {
+					name: this.get('name'),
+					email: this.get('email')
+
+				});
+				user.set('number', this.get('number'));
+				user.set('typedPass', this.get('password'));
+				user.save().then(function () {
+					//this is basically what happens when you trigger the LoginControllerMixin's "authenticate" action
+					self.get('session').authenticate('authenticator:custom', {
+						name: self.get('name'),
+						password: self.get('password')
+					})['catch'](function (message) {
+						self.set('errorMessage', message);
+					});
+				});
+			}
+		}
+	});
 });
 define('embtest/controllers/object', ['exports', 'ember'], function (exports, _ember) {
   exports['default'] = _ember['default'].Controller;
@@ -476,6 +521,12 @@ define('embtest/mixins/transition-mixin', ['exports', 'ember-css-transitions/mix
     }
   });
 });
+define('embtest/models/user', ['exports', 'ember-data'], function (exports, _emberData) {
+   exports['default'] = _emberData['default'].Model.extend({
+      name: _emberData['default'].attr(),
+      email: _emberData['default'].attr()
+   });
+});
 define('embtest/resolver', ['exports', 'ember-resolver'], function (exports, _emberResolver) {
   exports['default'] = _emberResolver['default'];
 });
@@ -488,6 +539,7 @@ define('embtest/router', ['exports', 'ember', 'embtest/config/environment'], fun
   Router.map(function () {
     this.route('login');
     this.route('profile');
+    this.route('dashboard');
   });
 
   exports['default'] = Router;
@@ -501,11 +553,19 @@ define('embtest/routes/application', ['exports', 'ember', 'ember-simple-auth/mix
 		}
 	});
 });
+define('embtest/routes/dashboard', ['exports', 'ember', 'ember-simple-auth/mixins/authenticated-route-mixin'], function (exports, _ember, _emberSimpleAuthMixinsAuthenticatedRouteMixin) {
+	exports['default'] = _ember['default'].Route.extend(_emberSimpleAuthMixinsAuthenticatedRouteMixin['default'], {});
+});
 define('embtest/routes/login', ['exports', 'ember'], function (exports, _ember) {
   exports['default'] = _ember['default'].Route.extend({});
 });
 define('embtest/routes/profile', ['exports', 'ember', 'ember-simple-auth/mixins/authenticated-route-mixin'], function (exports, _ember, _emberSimpleAuthMixinsAuthenticatedRouteMixin) {
-  exports['default'] = _ember['default'].Route.extend(_emberSimpleAuthMixinsAuthenticatedRouteMixin['default'], {});
+	exports['default'] = _ember['default'].Route.extend(_emberSimpleAuthMixinsAuthenticatedRouteMixin['default'], {});
+});
+define('embtest/serializers/application', ['exports', 'ember-data'], function (exports, _emberData) {
+	exports['default'] = _emberData['default'].JSONAPISerializer.extend({
+		primaryKey: '_id'
+	});
 });
 define('embtest/services/ajax', ['exports', 'ember-ajax/services/ajax'], function (exports, _emberAjaxServicesAjax) {
   Object.defineProperty(exports, 'default', {
@@ -5524,6 +5584,98 @@ define("embtest/templates/components/transition-group", ["exports"], function (e
     };
   })());
 });
+define("embtest/templates/dashboard", ["exports"], function (exports) {
+  exports["default"] = Ember.HTMLBars.template((function () {
+    var child0 = (function () {
+      return {
+        meta: {
+          "fragmentReason": false,
+          "revision": "Ember@2.3.0",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 2,
+              "column": 0
+            },
+            "end": {
+              "line": 2,
+              "column": 105
+            }
+          },
+          "moduleName": "embtest/templates/dashboard.hbs"
+        },
+        isEmpty: false,
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createTextNode("test protected api");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes() {
+          return [];
+        },
+        statements: [],
+        locals: [],
+        templates: []
+      };
+    })();
+    return {
+      meta: {
+        "fragmentReason": {
+          "name": "missing-wrapper",
+          "problems": ["multiple-nodes", "wrong-type"]
+        },
+        "revision": "Ember@2.3.0",
+        "loc": {
+          "source": null,
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 4,
+            "column": 0
+          }
+        },
+        "moduleName": "embtest/templates/dashboard.hbs"
+      },
+      isEmpty: false,
+      arity: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      buildFragment: function buildFragment(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createElement("p");
+        var el2 = dom.createTextNode("Logged in to dashboard");
+        dom.appendChild(el1, el2);
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n");
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+        var morphs = new Array(2);
+        morphs[0] = dom.createMorphAt(fragment, 2, 2, contextualElement);
+        morphs[1] = dom.createMorphAt(fragment, 4, 4, contextualElement);
+        return morphs;
+      },
+      statements: [["block", "paper-button", [], ["class", "login-options", "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [2, 45], [2, 50]]]]], [], []], "action", ["subexpr", "action", ["testprotectedApi"], [], ["loc", [null, [2, 58], [2, 85]]]]], 0, null, ["loc", [null, [2, 0], [2, 122]]]], ["content", "outlet", ["loc", [null, [3, 0], [3, 10]]]]],
+      locals: [],
+      templates: [child0]
+    };
+  })());
+});
 define("embtest/templates/login", ["exports"], function (exports) {
   exports["default"] = Ember.HTMLBars.template((function () {
     var child0 = (function () {
@@ -5736,6 +5888,42 @@ define("embtest/templates/login", ["exports"], function (exports) {
         };
       })();
       var child3 = (function () {
+        var child0 = (function () {
+          return {
+            meta: {
+              "fragmentReason": false,
+              "revision": "Ember@2.3.0",
+              "loc": {
+                "source": null,
+                "start": {
+                  "line": 19,
+                  "column": 1
+                },
+                "end": {
+                  "line": 19,
+                  "column": 68
+                }
+              },
+              "moduleName": "embtest/templates/login.hbs"
+            },
+            isEmpty: false,
+            arity: 0,
+            cachedFragment: null,
+            hasRendered: false,
+            buildFragment: function buildFragment(dom) {
+              var el0 = dom.createDocumentFragment();
+              var el1 = dom.createTextNode("Submit");
+              dom.appendChild(el0, el1);
+              return el0;
+            },
+            buildRenderNodes: function buildRenderNodes() {
+              return [];
+            },
+            statements: [],
+            locals: [],
+            templates: []
+          };
+        })();
         return {
           meta: {
             "fragmentReason": false,
@@ -5743,12 +5931,12 @@ define("embtest/templates/login", ["exports"], function (exports) {
             "loc": {
               "source": null,
               "start": {
-                "line": 18,
+                "line": 17,
                 "column": 1
               },
               "end": {
-                "line": 18,
-                "column": 68
+                "line": 20,
+                "column": 1
               }
             },
             "moduleName": "embtest/templates/login.hbs"
@@ -5759,16 +5947,100 @@ define("embtest/templates/login", ["exports"], function (exports) {
           hasRendered: false,
           buildFragment: function buildFragment(dom) {
             var el0 = dom.createDocumentFragment();
-            var el1 = dom.createTextNode("Submit");
+            var el1 = dom.createTextNode("		\n	");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createComment("");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createTextNode("\n");
             dom.appendChild(el0, el1);
             return el0;
           },
-          buildRenderNodes: function buildRenderNodes() {
-            return [];
+          buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+            var morphs = new Array(1);
+            morphs[0] = dom.createMorphAt(fragment, 1, 1, contextualElement);
+            return morphs;
           },
-          statements: [],
+          statements: [["block", "paper-button", [], ["action", ["subexpr", "action", ["authenticate"], [], ["loc", [null, [19, 24], [19, 47]]]], "primary", true], 0, null, ["loc", [null, [19, 1], [19, 85]]]]],
           locals: [],
-          templates: []
+          templates: [child0]
+        };
+      })();
+      var child4 = (function () {
+        var child0 = (function () {
+          return {
+            meta: {
+              "fragmentReason": false,
+              "revision": "Ember@2.3.0",
+              "loc": {
+                "source": null,
+                "start": {
+                  "line": 23,
+                  "column": 1
+                },
+                "end": {
+                  "line": 23,
+                  "column": 70
+                }
+              },
+              "moduleName": "embtest/templates/login.hbs"
+            },
+            isEmpty: false,
+            arity: 0,
+            cachedFragment: null,
+            hasRendered: false,
+            buildFragment: function buildFragment(dom) {
+              var el0 = dom.createDocumentFragment();
+              var el1 = dom.createTextNode("Register");
+              dom.appendChild(el0, el1);
+              return el0;
+            },
+            buildRenderNodes: function buildRenderNodes() {
+              return [];
+            },
+            statements: [],
+            locals: [],
+            templates: []
+          };
+        })();
+        return {
+          meta: {
+            "fragmentReason": false,
+            "revision": "Ember@2.3.0",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 21,
+                "column": 2
+              },
+              "end": {
+                "line": 24,
+                "column": 1
+              }
+            },
+            "moduleName": "embtest/templates/login.hbs"
+          },
+          isEmpty: false,
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createTextNode("		\n	");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createComment("");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createTextNode("\n");
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+            var morphs = new Array(1);
+            morphs[0] = dom.createMorphAt(fragment, 1, 1, contextualElement);
+            return morphs;
+          },
+          statements: [["block", "paper-button", [], ["action", ["subexpr", "action", ["registerUser"], [], ["loc", [null, [23, 24], [23, 47]]]], "primary", true], 0, null, ["loc", [null, [23, 1], [23, 87]]]]],
+          locals: [],
+          templates: [child0]
         };
       })();
       return {
@@ -5785,7 +6057,7 @@ define("embtest/templates/login", ["exports"], function (exports) {
               "column": 0
             },
             "end": {
-              "line": 19,
+              "line": 25,
               "column": 0
             }
           },
@@ -5815,28 +6087,28 @@ define("embtest/templates/login", ["exports"], function (exports) {
           dom.appendChild(el0, el1);
           var el1 = dom.createComment("");
           dom.appendChild(el0, el1);
-          var el1 = dom.createTextNode("\n	");
-          dom.appendChild(el0, el1);
           var el1 = dom.createComment("");
           dom.appendChild(el0, el1);
-          var el1 = dom.createTextNode("\n");
+          var el1 = dom.createComment("");
           dom.appendChild(el0, el1);
           return el0;
         },
         buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-          var morphs = new Array(6);
+          var morphs = new Array(7);
           morphs[0] = dom.createMorphAt(fragment, 0, 0, contextualElement);
           morphs[1] = dom.createMorphAt(fragment, 2, 2, contextualElement);
           morphs[2] = dom.createMorphAt(fragment, 4, 4, contextualElement);
           morphs[3] = dom.createMorphAt(fragment, 6, 6, contextualElement);
           morphs[4] = dom.createMorphAt(fragment, 8, 8, contextualElement);
-          morphs[5] = dom.createMorphAt(fragment, 10, 10, contextualElement);
+          morphs[5] = dom.createMorphAt(fragment, 9, 9, contextualElement);
+          morphs[6] = dom.createMorphAt(fragment, 10, 10, contextualElement);
           dom.insertBoundary(fragment, 0);
+          dom.insertBoundary(fragment, null);
           return morphs;
         },
-        statements: [["block", "paper-toolbar", [], [], 0, null, ["loc", [null, [2, 1], [5, 19]]]], ["inline", "paper-input", [], ["label", "Name", "value", ["subexpr", "@mut", [["get", "name", ["loc", [null, [6, 34], [6, 38]]]]], [], []]], ["loc", [null, [6, 1], [6, 40]]]], ["block", "animated-if", [], ["condition", ["subexpr", "@mut", [["get", "signup", ["loc", [null, [8, 26], [8, 32]]]]], [], []]], 1, null, ["loc", [null, [8, 1], [11, 17]]]], ["inline", "paper-input", [], ["label", "Password", "value", ["subexpr", "@mut", [["get", "password", ["loc", [null, [13, 38], [13, 46]]]]], [], []]], ["loc", [null, [13, 1], [13, 48]]]], ["block", "animated-if", [], ["condition", ["subexpr", "@mut", [["get", "signup", ["loc", [null, [14, 26], [14, 32]]]]], [], []]], 2, null, ["loc", [null, [14, 1], [16, 17]]]], ["block", "paper-button", [], ["action", ["subexpr", "action", ["authenticate"], [], ["loc", [null, [18, 24], [18, 47]]]], "primary", true], 3, null, ["loc", [null, [18, 1], [18, 85]]]]],
+        statements: [["block", "paper-toolbar", [], [], 0, null, ["loc", [null, [2, 1], [5, 19]]]], ["inline", "paper-input", [], ["label", "Name", "value", ["subexpr", "@mut", [["get", "name", ["loc", [null, [6, 34], [6, 38]]]]], [], []]], ["loc", [null, [6, 1], [6, 40]]]], ["block", "animated-if", [], ["condition", ["subexpr", "@mut", [["get", "signup", ["loc", [null, [8, 26], [8, 32]]]]], [], []]], 1, null, ["loc", [null, [8, 1], [11, 17]]]], ["inline", "paper-input", [], ["label", "Password", "value", ["subexpr", "@mut", [["get", "password", ["loc", [null, [13, 38], [13, 46]]]]], [], []]], ["loc", [null, [13, 1], [13, 48]]]], ["block", "animated-if", [], ["condition", ["subexpr", "@mut", [["get", "signup", ["loc", [null, [14, 26], [14, 32]]]]], [], []]], 2, null, ["loc", [null, [14, 1], [16, 17]]]], ["block", "animated-if", [], ["condition", ["subexpr", "@mut", [["get", "login", ["loc", [null, [17, 26], [17, 31]]]]], [], []]], 3, null, ["loc", [null, [17, 1], [20, 17]]]], ["block", "animated-if", [], ["condition", ["subexpr", "@mut", [["get", "signup", ["loc", [null, [21, 27], [21, 33]]]]], [], []]], 4, null, ["loc", [null, [21, 2], [24, 17]]]]],
         locals: [],
-        templates: [child0, child1, child2, child3]
+        templates: [child0, child1, child2, child3, child4]
       };
     })();
     return {
@@ -5853,7 +6125,7 @@ define("embtest/templates/login", ["exports"], function (exports) {
             "column": 0
           },
           "end": {
-            "line": 20,
+            "line": 26,
             "column": 0
           }
         },
@@ -5876,7 +6148,7 @@ define("embtest/templates/login", ["exports"], function (exports) {
         dom.insertBoundary(fragment, null);
         return morphs;
       },
-      statements: [["block", "paper-card", [], ["class", "login-card"], 0, null, ["loc", [null, [1, 0], [19, 15]]]]],
+      statements: [["block", "paper-card", [], ["class", "login-card"], 0, null, ["loc", [null, [1, 0], [25, 15]]]]],
       locals: [],
       templates: [child0]
     };
@@ -5970,7 +6242,7 @@ catch(err) {
 
 /* jshint ignore:start */
 if (!runningTests) {
-  require("embtest/app")["default"].create({"name":"embtest","version":"0.0.0+87381ab0"});
+  require("embtest/app")["default"].create({"name":"embtest","version":"0.0.0+44d9a07b"});
 }
 /* jshint ignore:end */
 //# sourceMappingURL=embtest.map

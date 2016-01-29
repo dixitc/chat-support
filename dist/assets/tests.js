@@ -1,3 +1,12 @@
+define('embtest/tests/adapters/application.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - adapters');
+  QUnit.test('adapters/application.js should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'adapters/application.js should pass jshint.');
+  });
+});
 define('embtest/tests/app.jshint', ['exports'], function (exports) {
   'use strict';
 
@@ -22,7 +31,7 @@ define('embtest/tests/authorizers/custom.jshint', ['exports'], function (exports
   QUnit.module('JSHint - authorizers');
   QUnit.test('authorizers/custom.js should pass jshint', function (assert) {
     assert.expect(1);
-    assert.ok(false, 'authorizers/custom.js should pass jshint.\nauthorizers/custom.js: line 5, col 32, \'requestOptions\' is defined but never used.\n\n1 error');
+    assert.ok(true, 'authorizers/custom.js should pass jshint.');
   });
 });
 define('embtest/tests/components/animated-if.jshint', ['exports'], function (exports) {
@@ -43,13 +52,22 @@ define('embtest/tests/controllers/application.jshint', ['exports'], function (ex
     assert.ok(true, 'controllers/application.js should pass jshint.');
   });
 });
+define('embtest/tests/controllers/dashboard.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - controllers');
+  QUnit.test('controllers/dashboard.js should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(false, 'controllers/dashboard.js should pass jshint.\ncontrollers/dashboard.js: line 6, col 17, \'self\' is defined but never used.\n\n1 error');
+  });
+});
 define('embtest/tests/controllers/login.jshint', ['exports'], function (exports) {
   'use strict';
 
   QUnit.module('JSHint - controllers');
   QUnit.test('controllers/login.js should pass jshint', function (assert) {
     assert.expect(1);
-    assert.ok(true, 'controllers/login.js should pass jshint.');
+    assert.ok(false, 'controllers/login.js should pass jshint.\ncontrollers/login.js: line 40, col 63, Missing semicolon.\n\n1 error');
   });
 });
 define('embtest/tests/helpers/destroy-app', ['exports', 'ember'], function (exports, _ember) {
@@ -337,6 +355,15 @@ define('embtest/tests/integration/components/animated-if-test.jshint', ['exports
     assert.ok(true, 'integration/components/animated-if-test.js should pass jshint.');
   });
 });
+define('embtest/tests/models/user.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - models');
+  QUnit.test('models/user.js should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'models/user.js should pass jshint.');
+  });
+});
 define('embtest/tests/resolver.jshint', ['exports'], function (exports) {
   'use strict';
 
@@ -364,6 +391,15 @@ define('embtest/tests/routes/application.jshint', ['exports'], function (exports
     assert.ok(true, 'routes/application.js should pass jshint.');
   });
 });
+define('embtest/tests/routes/dashboard.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - routes');
+  QUnit.test('routes/dashboard.js should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'routes/dashboard.js should pass jshint.');
+  });
+});
 define('embtest/tests/routes/login.jshint', ['exports'], function (exports) {
   'use strict';
 
@@ -382,6 +418,15 @@ define('embtest/tests/routes/profile.jshint', ['exports'], function (exports) {
     assert.ok(true, 'routes/profile.js should pass jshint.');
   });
 });
+define('embtest/tests/serializers/application.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - serializers');
+  QUnit.test('serializers/application.js should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'serializers/application.js should pass jshint.');
+  });
+});
 define('embtest/tests/test-helper', ['exports', 'embtest/tests/helpers/resolver', 'ember-qunit'], function (exports, _embtestTestsHelpersResolver, _emberQunit) {
 
   (0, _emberQunit.setResolver)(_embtestTestsHelpersResolver['default']);
@@ -393,6 +438,28 @@ define('embtest/tests/test-helper.jshint', ['exports'], function (exports) {
   QUnit.test('test-helper.js should pass jshint', function (assert) {
     assert.expect(1);
     assert.ok(true, 'test-helper.js should pass jshint.');
+  });
+});
+define('embtest/tests/unit/adapters/application-test', ['exports', 'ember-qunit'], function (exports, _emberQunit) {
+
+  (0, _emberQunit.moduleFor)('adapter:application', 'Unit | Adapter | application', {
+    // Specify the other units that are required for this test.
+    // needs: ['serializer:foo']
+  });
+
+  // Replace this with your real tests.
+  (0, _emberQunit.test)('it exists', function (assert) {
+    var adapter = this.subject();
+    assert.ok(adapter);
+  });
+});
+define('embtest/tests/unit/adapters/application-test.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - unit/adapters');
+  QUnit.test('unit/adapters/application-test.js should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'unit/adapters/application-test.js should pass jshint.');
   });
 });
 define('embtest/tests/unit/controllers/application-test', ['exports', 'ember-qunit'], function (exports, _emberQunit) {
@@ -417,6 +484,28 @@ define('embtest/tests/unit/controllers/application-test.jshint', ['exports'], fu
     assert.ok(true, 'unit/controllers/application-test.js should pass jshint.');
   });
 });
+define('embtest/tests/unit/controllers/dashboard-test', ['exports', 'ember-qunit'], function (exports, _emberQunit) {
+
+  (0, _emberQunit.moduleFor)('controller:dashboard', 'Unit | Controller | dashboard', {
+    // Specify the other units that are required for this test.
+    // needs: ['controller:foo']
+  });
+
+  // Replace this with your real tests.
+  (0, _emberQunit.test)('it exists', function (assert) {
+    var controller = this.subject();
+    assert.ok(controller);
+  });
+});
+define('embtest/tests/unit/controllers/dashboard-test.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - unit/controllers');
+  QUnit.test('unit/controllers/dashboard-test.js should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'unit/controllers/dashboard-test.js should pass jshint.');
+  });
+});
 define('embtest/tests/unit/controllers/login-test', ['exports', 'ember-qunit'], function (exports, _emberQunit) {
 
   (0, _emberQunit.moduleFor)('controller:login', 'Unit | Controller | login', {
@@ -439,6 +528,28 @@ define('embtest/tests/unit/controllers/login-test.jshint', ['exports'], function
     assert.ok(true, 'unit/controllers/login-test.js should pass jshint.');
   });
 });
+define('embtest/tests/unit/models/user-test', ['exports', 'ember-qunit'], function (exports, _emberQunit) {
+
+  (0, _emberQunit.moduleForModel)('user', 'Unit | Model | user', {
+    // Specify the other units that are required for this test.
+    needs: []
+  });
+
+  (0, _emberQunit.test)('it exists', function (assert) {
+    var model = this.subject();
+    // let store = this.store();
+    assert.ok(!!model);
+  });
+});
+define('embtest/tests/unit/models/user-test.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - unit/models');
+  QUnit.test('unit/models/user-test.js should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'unit/models/user-test.js should pass jshint.');
+  });
+});
 define('embtest/tests/unit/routes/application-test', ['exports', 'ember-qunit'], function (exports, _emberQunit) {
 
   (0, _emberQunit.moduleFor)('route:application', 'Unit | Route | application', {
@@ -458,6 +569,27 @@ define('embtest/tests/unit/routes/application-test.jshint', ['exports'], functio
   QUnit.test('unit/routes/application-test.js should pass jshint', function (assert) {
     assert.expect(1);
     assert.ok(true, 'unit/routes/application-test.js should pass jshint.');
+  });
+});
+define('embtest/tests/unit/routes/dashboard-test', ['exports', 'ember-qunit'], function (exports, _emberQunit) {
+
+  (0, _emberQunit.moduleFor)('route:dashboard', 'Unit | Route | dashboard', {
+    // Specify the other units that are required for this test.
+    // needs: ['controller:foo']
+  });
+
+  (0, _emberQunit.test)('it exists', function (assert) {
+    var route = this.subject();
+    assert.ok(route);
+  });
+});
+define('embtest/tests/unit/routes/dashboard-test.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - unit/routes');
+  QUnit.test('unit/routes/dashboard-test.js should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'unit/routes/dashboard-test.js should pass jshint.');
   });
 });
 define('embtest/tests/unit/routes/login-test', ['exports', 'ember-qunit'], function (exports, _emberQunit) {
@@ -500,6 +632,31 @@ define('embtest/tests/unit/routes/profile-test.jshint', ['exports'], function (e
   QUnit.test('unit/routes/profile-test.js should pass jshint', function (assert) {
     assert.expect(1);
     assert.ok(true, 'unit/routes/profile-test.js should pass jshint.');
+  });
+});
+define('embtest/tests/unit/serializers/application-test', ['exports', 'ember-qunit'], function (exports, _emberQunit) {
+
+  (0, _emberQunit.moduleForModel)('application', 'Unit | Serializer | application', {
+    // Specify the other units that are required for this test.
+    needs: ['serializer:application']
+  });
+
+  // Replace this with your real tests.
+  (0, _emberQunit.test)('it serializes records', function (assert) {
+    var record = this.subject();
+
+    var serializedRecord = record.serialize();
+
+    assert.ok(serializedRecord);
+  });
+});
+define('embtest/tests/unit/serializers/application-test.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - unit/serializers');
+  QUnit.test('unit/serializers/application-test.js should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'unit/serializers/application-test.js should pass jshint.');
   });
 });
 /* jshint ignore:start */

@@ -14,6 +14,12 @@
 	{{#animated-if condition=signup}}
 		{{paper-input label="Confirm Password" value=cnfpassword}}
 	{{/animated-if}}
-
+	{{#animated-if condition=login}}
+		
 	{{#paper-button action=(action "authenticate") primary=true}}Submit{{/paper-button}}
+	{{/animated-if}}
+		{{#animated-if condition=signup}}
+		
+	{{#paper-button action=(action "registerUser") primary=true}}Register{{/paper-button}}
+	{{/animated-if}}
 {{/paper-card}}
