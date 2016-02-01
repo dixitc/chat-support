@@ -6,6 +6,7 @@ export default Base.extend( {
 		const {
 			token
 		} = data;
+		//console.log(atob(data.token.split('.')[1]))
 		if ( !Ember.isEmpty( token ) ) {
 			block( 'Authorization', `Bearer ${token}` );
 		}

@@ -3,23 +3,33 @@
 		{{#paper-button class="login-options" signup=login action=(action "togglesignup")}}LOGIN{{/paper-button}}
 		{{#paper-button class="login-options" signup=signup action=(action "togglesignup")}}SIGN UP{{/paper-button}}
 	{{/paper-toolbar}}
-	{{paper-input label="Name" value=name}}
+	{{paper-input label="Name" isTouched=nameTouched value=user.name type="text" errText=nameValidation}}
 	
 	{{#animated-if condition=signup}}
-		{{paper-input label="Email" value=email required=true required-errortext="Email is required."}}
-		{{paper-input label="Phone Number" value=number}}
+		{{paper-input label="Email"  isTouched=emailTouched value=user.email required=true type="email" icon-class="email" required-errortext="Email is required." errText=emailValidation}}
+		
+		{{paper-input label="Phone Number"  isTouched=numberTouched  type="tel" value=user.number errText=numberValidation}}
 	{{/animated-if}}
 	
-	{{paper-input label="Password" value=password}}
+	{{paper-input label="Password"  isTouched=password1Touched errText=passwordValidation type="password" value=user.password1}}
 	{{#animated-if condition=signup}}
-		{{paper-input label="Confirm Password" value=cnfpassword}}
+		{{paper-input label="Confirm Password"  isTouched=password2Touched  type="password" value=user.password2 errText=passwordsMatchValidation}}
 	{{/animated-if}}
+
+{{#if notLoading}}
 	{{#animated-if condition=login}}
 		
 	{{#paper-button action=(action "authenticate") primary=true}}Submit{{/paper-button}}
+
 	{{/animated-if}}
+
 		{{#animated-if condition=signup}}
 		
 	{{#paper-button action=(action "registerUser") primary=true}}Register{{/paper-button}}
 	{{/animated-if}}
+	{{else}}
+
+	{{paper-progress-circular class="sm-hue-2" size="sm"}}
+	{{/if}}
+	
 {{/paper-card}}

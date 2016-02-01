@@ -39,5 +39,9 @@
     "ember-paper": "0.2.10",
     "ember-resolver": "^2.0.3",
     "ember-simple-auth": "1.0.1"
+  },
+  "dependencies": {
+    "ember-computed-validations": "0.0.3",
+    "ember-validations": "^2.0.0-alpha.4"
   }
 }

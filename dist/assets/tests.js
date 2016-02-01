@@ -22,7 +22,7 @@ define('embtest/tests/authenticators/custom.jshint', ['exports'], function (expo
   QUnit.module('JSHint - authenticators');
   QUnit.test('authenticators/custom.js should pass jshint', function (assert) {
     assert.expect(1);
-    assert.ok(false, 'authenticators/custom.js should pass jshint.\nauthenticators/custom.js: line 33, col 38, \'error\' is defined but never used.\nauthenticators/custom.js: line 33, col 30, \'status\' is defined but never used.\n\n2 errors');
+    assert.ok(false, 'authenticators/custom.js should pass jshint.\nauthenticators/custom.js: line 9, col 40, Missing semicolon.\nauthenticators/custom.js: line 34, col 38, \'error\' is defined but never used.\nauthenticators/custom.js: line 34, col 30, \'status\' is defined but never used.\n\n3 errors');
   });
 });
 define('embtest/tests/authorizers/custom.jshint', ['exports'], function (exports) {
@@ -67,7 +67,7 @@ define('embtest/tests/controllers/login.jshint', ['exports'], function (exports)
   QUnit.module('JSHint - controllers');
   QUnit.test('controllers/login.js should pass jshint', function (assert) {
     assert.expect(1);
-    assert.ok(false, 'controllers/login.js should pass jshint.\ncontrollers/login.js: line 40, col 63, Missing semicolon.\n\n1 error');
+    assert.ok(false, 'controllers/login.js should pass jshint.\ncontrollers/login.js: line 22, col 39, Missing semicolon.\ncontrollers/login.js: line 25, col 38, Missing semicolon.\ncontrollers/login.js: line 74, col 42, Missing semicolon.\ncontrollers/login.js: line 73, col 17, \'user\' is defined but never used.\ncontrollers/login.js: line 108, col 17, \'credentials\' is defined but never used.\ncontrollers/login.js: line 137, col 54, Missing semicolon.\n\n6 errors');
   });
 });
 define('embtest/tests/helpers/destroy-app', ['exports', 'ember'], function (exports, _ember) {
@@ -205,6 +205,72 @@ define('embtest/tests/helpers/start-app.jshint', ['exports'], function (exports)
     assert.expect(1);
     assert.ok(true, 'helpers/start-app.js should pass jshint.');
   });
+});
+define('embtest/tests/helpers/validate-properties', ['exports', 'ember', 'ember-qunit'], function (exports, _ember, _emberQunit) {
+  exports.testValidPropertyValues = testValidPropertyValues;
+  exports.testInvalidPropertyValues = testInvalidPropertyValues;
+
+  var run = _ember['default'].run;
+
+  function validateValues(object, propertyName, values, isTestForValid) {
+    var promise = null;
+    var validatedValues = [];
+
+    values.forEach(function (value) {
+      function handleValidation(errors) {
+        var hasErrors = object.get('errors.' + propertyName + '.firstObject');
+        if (hasErrors && !isTestForValid || !hasErrors && isTestForValid) {
+          validatedValues.push(value);
+        }
+      }
+
+      run(object, 'set', propertyName, value);
+
+      var objectPromise = null;
+      run(function () {
+        objectPromise = object.validate().then(handleValidation, handleValidation);
+      });
+
+      // Since we are setting the values in a different run loop as we are validating them,
+      // we need to chain the promises so that they run sequentially. The wrong value will
+      // be validated if the promises execute concurrently
+      promise = promise ? promise.then(objectPromise) : objectPromise;
+    });
+
+    return promise.then(function () {
+      return validatedValues;
+    });
+  }
+
+  function testPropertyValues(propertyName, values, isTestForValid, context) {
+    var validOrInvalid = isTestForValid ? 'Valid' : 'Invalid';
+    var testName = validOrInvalid + ' ' + propertyName;
+
+    (0, _emberQunit.test)(testName, function (assert) {
+      var object = this.subject();
+
+      if (context && typeof context === 'function') {
+        context(object);
+      }
+
+      // Use QUnit.dump.parse so null and undefined can be printed as literal 'null' and
+      // 'undefined' strings in the assert message.
+      var valuesString = QUnit.dump.parse(values).replace(/\n(\s+)?/g, '').replace(/,/g, ', ');
+      var assertMessage = 'Expected ' + propertyName + ' to have ' + validOrInvalid.toLowerCase() + ' values: ' + valuesString;
+
+      return validateValues(object, propertyName, values, isTestForValid).then(function (validatedValues) {
+        assert.deepEqual(validatedValues, values, assertMessage);
+      });
+    });
+  }
+
+  function testValidPropertyValues(propertyName, values, context) {
+    testPropertyValues(propertyName, values, true, context);
+  }
+
+  function testInvalidPropertyValues(propertyName, values, context) {
+    testPropertyValues(propertyName, values, false, context);
+  }
 });
 define('embtest/tests/integration/components/animated-if-test', ['exports', 'ember-qunit'], function (exports, _emberQunit) {
 
@@ -425,6 +491,15 @@ define('embtest/tests/serializers/application.jshint', ['exports'], function (ex
   QUnit.test('serializers/application.js should pass jshint', function (assert) {
     assert.expect(1);
     assert.ok(true, 'serializers/application.js should pass jshint.');
+  });
+});
+define('embtest/tests/serializers/user.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - serializers');
+  QUnit.test('serializers/user.js should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(false, 'serializers/user.js should pass jshint.\nserializers/user.js: line 10, col 10, Missing semicolon.\nserializers/user.js: line 4, col 35, \'options\' is defined but never used.\n\n2 errors');
   });
 });
 define('embtest/tests/test-helper', ['exports', 'embtest/tests/helpers/resolver', 'ember-qunit'], function (exports, _embtestTestsHelpersResolver, _emberQunit) {
@@ -657,6 +732,53 @@ define('embtest/tests/unit/serializers/application-test.jshint', ['exports'], fu
   QUnit.test('unit/serializers/application-test.js should pass jshint', function (assert) {
     assert.expect(1);
     assert.ok(true, 'unit/serializers/application-test.js should pass jshint.');
+  });
+});
+define('embtest/tests/unit/serializers/user-test', ['exports', 'ember-qunit'], function (exports, _emberQunit) {
+
+  (0, _emberQunit.moduleForModel)('user', 'Unit | Serializer | user', {
+    // Specify the other units that are required for this test.
+    needs: ['serializer:user']
+  });
+
+  // Replace this with your real tests.
+  (0, _emberQunit.test)('it serializes records', function (assert) {
+    var record = this.subject();
+
+    var serializedRecord = record.serialize();
+
+    assert.ok(serializedRecord);
+  });
+});
+define('embtest/tests/unit/serializers/user-test.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - unit/serializers');
+  QUnit.test('unit/serializers/user-test.js should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'unit/serializers/user-test.js should pass jshint.');
+  });
+});
+define('embtest/tests/unit/services/session-test', ['exports', 'ember-qunit'], function (exports, _emberQunit) {
+
+  (0, _emberQunit.moduleFor)('service:session', 'Unit | Service | session', {
+    // Specify the other units that are required for this test.
+    // needs: ['service:foo']
+  });
+
+  // Replace this with your real tests.
+  (0, _emberQunit.test)('it exists', function (assert) {
+    var service = this.subject();
+    assert.ok(service);
+  });
+});
+define('embtest/tests/unit/services/session-test.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - unit/services');
+  QUnit.test('unit/services/session-test.js should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'unit/services/session-test.js should pass jshint.');
   });
 });
 /* jshint ignore:start */

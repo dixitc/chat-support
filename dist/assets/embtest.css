@@ -8490,7 +8490,7 @@ md-toolbar.md-default-theme {
   width: 400px;
   margin: auto;
   padding: 20px;
-  margin-top: 100px; }
+  margin-top: 5%; }
   .login-card md-toolbar.md-default-theme {
     background: white; }
   .login-card .login-options {
@@ -8508,7 +8508,7 @@ a {
   text-decoration: none; }
 
 .dark {
-  background: rgba(158, 158, 158, 0.2); }
+  background: rgba(63, 81, 181, 0.14); }
 
 .light {
   background: transparent; }

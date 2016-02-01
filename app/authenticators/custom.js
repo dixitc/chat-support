@@ -6,6 +6,7 @@ export default Base.extend({
     restore: function(data) {
         return new Ember.RSVP.Promise(function(resolve, reject) {
             if (!Ember.isEmpty(data.token)) {
+                console.log(data.token)
                 resolve(data);
             } else {
                 reject();
@@ -27,7 +28,7 @@ export default Base.extend({
             }).then(function(response) {
                 Ember.run(function() {
                     resolve({
-                        token: response.id_token
+                        token: response.token
                     });
                 });
             }, function(xhr, status, error) {

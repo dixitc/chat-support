@@ -5,7 +5,7 @@
 
 define('embtest/adapters/application', ['exports', 'ember-data', 'ember-simple-auth/mixins/data-adapter-mixin'], function (exports, _emberData, _emberSimpleAuthMixinsDataAdapterMixin) {
 	exports['default'] = _emberData['default'].RESTAdapter.extend(_emberSimpleAuthMixinsDataAdapterMixin['default'], {
-		host: 'http://172.16.1.168:3000',
+		host: 'http://localhost:3000',
 		authorizer: 'authorizer:custom'
 	});
 });
@@ -31,6 +31,7 @@ define('embtest/authenticators/custom', ['exports', 'ember', 'ember-simple-auth/
         restore: function restore(data) {
             return new _ember['default'].RSVP.Promise(function (resolve, reject) {
                 if (!_ember['default'].isEmpty(data.token)) {
+                    console.log(data.token);
                     resolve(data);
                 } else {
                     reject();
@@ -54,7 +55,7 @@ define('embtest/authenticators/custom', ['exports', 'ember', 'ember-simple-auth/
                 }).then(function (response) {
                     _ember['default'].run(function () {
                         resolve({
-                            token: response.id_token
+                            token: response.token
                         });
                     });
                 }, function (xhr, status, error) {
@@ -78,6 +79,7 @@ define('embtest/authorizers/custom', ['exports', 'ember', 'ember-simple-auth/aut
 		authorize: function authorize(data, block) {
 			var token = data.token;
 
+			//console.log(atob(data.token.split('.')[1]))
 			if (!_ember['default'].isEmpty(token)) {
 				block('Authorization', 'Bearer ' + token);
 			}
@@ -390,46 +392,149 @@ define('embtest/controllers/dashboard', ['exports', 'ember'], function (exports,
 	});
 });
 define('embtest/controllers/login', ['exports', 'ember'], function (exports, _ember) {
-	exports['default'] = _ember['default'].Controller.extend({
-		session: _ember['default'].inject.service('session'),
-		authenticator: 'authenticator:custom',
-		signup: false,
-		login: _ember['default'].computed('params.[]', function () {
-			return !this.get('signup');
-		}).property('signup'),
-		actions: {
-			authenticate: function authenticate() {
-				var _this = this;
+    exports['default'] = _ember['default'].Controller.extend({
+        session: _ember['default'].inject.service('session'),
+        authenticator: 'authenticator:custom',
+        nameTouched: false,
+        emailTouched: false,
+        numberTouched: false,
+        password1Touched: false,
+        password2Touched: false,
+        signup: false,
+        notLoading: true,
+        login: _ember['default'].computed.not('signup'),
+        user: {
+            name: '',
+            email: '',
+            number: '',
+            password1: '',
+            password2: ''
+        },
+        nameValidation: _ember['default'].computed('user.name', 'reset', function () {
+            if (this.get('reset')) {
+                console.log("reset false");
+                return "asdf";
+            } else {
+                console.log("reset true");
+                var _name = this.get('user.name');
+                if (_ember['default'].isEmpty(_name)) {
+                    return "This is required";
+                } else {
+                    return "";
+                }
+            }
+        }),
+        numberValidation: _ember['default'].computed('user.number', function () {
+            var number = this.get('user.number');
+            console.log(_ember['default'].isEmpty(number));
+            console.log(!isNaN(number));
+            if (_ember['default'].isEmpty(number)) {
+                return "This is required";
+            } else if (isNaN(number)) {
+                return "Use numbers";
+            } else {
+                return "";
+            }
+        }),
+        emailIsEmail: _ember['default'].computed.match('user.email', /^.+@.+\..+$/),
+        passwordsMatchValidation: _ember['default'].computed('user.password1', 'user.password2', function () {
+            if (this.get('user.password1') === this.get('user.password2')) {
+                return "";
+            } else {
+                return "Passwords do not match";
+            }
+        }),
+        passwordValidation: _ember['default'].computed('user.password1', function () {
+            var pass1 = this.get('user.password1');
+            if (pass1.length > 5) {
+                return "";
+            } else {
+                return "Must be at least 5 characters";
+            }
+        }),
+        emailValidation: _ember['default'].computed('user.email', function () {
+            var email = this.get('user.email');
+            if (email.match(/^.+@.+\..+$/)) {
+                return "";
+            } else {
+                return "Please provide email in valid format";
+            }
+        }),
+        actions: {
+            validate: function validate() {
+                //method called before register or submit
+                var user = this.get('user');
+                this.set('notLoading', false);
 
-				var credentials = this.getProperties('name', 'password');
-				this.get('session').authenticate('authenticator:custom', credentials)['catch'](function (message) {
-					_this.set('errorMessage', message);
-				});
-			},
-			togglesignup: function togglesignup() {
-				this.toggleProperty('signup');
-			},
-			registerUser: function registerUser() {
-				var self = this;
-				var user = this.store.createRecord('user', {
-					name: this.get('name'),
-					email: this.get('email')
+                this.toggleProperty('nameTouched');
+                this.toggleProperty('emailTouched');
+                this.toggleProperty('numberTouched');
+                this.toggleProperty('password1Touched');
+                this.toggleProperty('password2Touched');
+            },
+            clearForm: function clearForm() {
+                //method called on toggling signup/login
+                if (this.get('nameTouched')) {}
+                this.set('user.name', '');
+                this.set('user.email', '');
+                this.set('user.number', '');
+                this.set('user.password1', '');
+                this.set('user.password2', '');
+                if (this.get('nameTouched')) {
+                    this.toggleProperty('nameTouched');
+                }
+                if (this.get('emailTouched')) {
+                    this.toggleProperty('emailTouched');
+                }
+                if (this.get('numberTouched')) {
+                    this.toggleProperty('numberTouched');
+                }
+                if (this.get('password1Touched')) {
+                    this.toggleProperty('password1Touched');
+                }
+                if (this.get('password2Touched')) {
+                    this.toggleProperty('password2Touched');
+                }
+            },
+            authenticate: function authenticate() {
+                var _this = this;
 
-				});
-				user.set('number', this.get('number'));
-				user.set('typedPass', this.get('password'));
-				user.save().then(function () {
-					//this is basically what happens when you trigger the LoginControllerMixin's "authenticate" action
-					self.get('session').authenticate('authenticator:custom', {
-						name: self.get('name'),
-						password: self.get('password')
-					})['catch'](function (message) {
-						self.set('errorMessage', message);
-					});
-				});
-			}
-		}
-	});
+                this.send('validate');
+                var credentials = this.getProperties('user.name', 'user.password1');
+                var self = this;
+                this.get('session').authenticate('authenticator:custom', {
+                    name: self.get('user.name'),
+                    password: self.get('user.password1')
+                })['catch'](function (message) {
+                    _this.set('errorMessage', message);
+                });
+            },
+            togglesignup: function togglesignup() {
+
+                this.toggleProperty('signup');
+                this.send('clearForm');
+            },
+            registerUser: function registerUser() {
+                this.send('validate');
+                var self = this;
+                var user = this.store.createRecord('user', {
+                    name: this.get('user.name'),
+                    email: this.get('user.email')
+                });
+                user.set('number', this.get('user.number'));
+                user.set('password', this.get('user.password1'));
+                user.save().then(function () {
+                    //this is basically what happens when you trigger the LoginControllerMixin's "authenticate" action
+                    self.get('session').authenticate('authenticator:custom', {
+                        name: self.get('user.name'),
+                        password: self.get('user.password1')
+                    })['catch'](function (message) {
+                        self.set('errorMessage', message);
+                    });
+                });
+            }
+        }
+    });
 });
 define('embtest/controllers/object', ['exports', 'ember'], function (exports, _ember) {
   exports['default'] = _ember['default'].Controller;
@@ -566,6 +671,27 @@ define('embtest/serializers/application', ['exports', 'ember-data'], function (e
 	exports['default'] = _emberData['default'].JSONAPISerializer.extend({
 		primaryKey: '_id'
 	});
+});
+define('embtest/serializers/user', ['exports', 'ember-data'], function (exports, _emberData) {
+    exports['default'] = _emberData['default'].JSONAPISerializer.extend({
+        primaryKey: '_id',
+        serialize: function serialize(snapshot, options) {
+            // var json = this._super(record, options);
+            var json = this._super.apply(this, arguments);
+            console.log(snapshot.record.password);
+            json.meta = {
+                typedPass: snapshot.record.password
+            };
+            // assuming niner isn't an attr on the model definition
+            // just a value added to the model that I want to include in the meta data 
+            /*var myrecord = record.record;
+            console.log(record);
+            json.meta = {
+                typedPass: myrecord.get('password')
+            };*/
+            return json;
+        }
+    });
 });
 define('embtest/services/ajax', ['exports', 'ember-ajax/services/ajax'], function (exports, _emberAjaxServicesAjax) {
   Object.defineProperty(exports, 'default', {
@@ -837,6 +963,16 @@ define('embtest/services/util', ['exports', 'ember'], function (exports, _ember)
 
   exports['default'] = Util;
 });
+define('embtest/services/validations', ['exports', 'ember'], function (exports, _ember) {
+
+  var set = _ember['default'].set;
+
+  exports['default'] = _ember['default'].Service.extend({
+    init: function init() {
+      set(this, 'cache', {});
+    }
+  });
+});
 define('embtest/session-stores/application', ['exports', 'ember-simple-auth/session-stores/adaptive'], function (exports, _emberSimpleAuthSessionStoresAdaptive) {
   exports['default'] = _emberSimpleAuthSessionStoresAdaptive['default'].extend();
 });
@@ -1091,7 +1227,7 @@ define("embtest/templates/application", ["exports"], function (exports) {
             "column": 0
           },
           "end": {
-            "line": 23,
+            "line": 24,
             "column": 0
           }
         },
@@ -1105,13 +1241,15 @@ define("embtest/templates/application", ["exports"], function (exports) {
         var el0 = dom.createDocumentFragment();
         var el1 = dom.createComment("");
         dom.appendChild(el0, el1);
-        var el1 = dom.createElement("div");
-        dom.setAttribute(el1, "class", "footer");
-        dom.setAttribute(el1, "style", "\n    position: absolute;\n    bottom: 0px;\n    background: black;\n    width: 100%;\n    height: 60px;\n    background: url('images/footer_bg.png');\n");
-        dom.appendChild(el0, el1);
         var el1 = dom.createTextNode("\n");
         dom.appendChild(el0, el1);
         var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createElement("div");
+        dom.setAttribute(el1, "class", "footer");
+        dom.setAttribute(el1, "style", "\n    position: absolute;\n    bottom: 0px;\n    background: black;\n    width: 100%;\n    height: 60px;\n    background: url('images/footer_bg.png');\n");
         dom.appendChild(el0, el1);
         var el1 = dom.createTextNode("\n");
         dom.appendChild(el0, el1);
@@ -1120,11 +1258,11 @@ define("embtest/templates/application", ["exports"], function (exports) {
       buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
         var morphs = new Array(2);
         morphs[0] = dom.createMorphAt(fragment, 0, 0, contextualElement);
-        morphs[1] = dom.createMorphAt(fragment, 3, 3, contextualElement);
+        morphs[1] = dom.createMorphAt(fragment, 2, 2, contextualElement);
         dom.insertBoundary(fragment, 0);
         return morphs;
       },
-      statements: [["block", "paper-toolbar", [], ["class", "toolbar"], 0, null, ["loc", [null, [1, 0], [13, 18]]]], ["content", "outlet", ["loc", [null, [22, 0], [22, 10]]]]],
+      statements: [["block", "paper-toolbar", [], ["class", "toolbar"], 0, null, ["loc", [null, [1, 0], [13, 18]]]], ["content", "outlet", ["loc", [null, [15, 0], [15, 10]]]]],
       locals: [],
       templates: [child0]
     };
@@ -5599,7 +5737,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             },
             "end": {
               "line": 2,
-              "column": 105
+              "column": 130
             }
           },
           "moduleName": "embtest/templates/dashboard.hbs"
@@ -5670,7 +5808,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
         morphs[1] = dom.createMorphAt(fragment, 4, 4, contextualElement);
         return morphs;
       },
-      statements: [["block", "paper-button", [], ["class", "login-options", "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [2, 45], [2, 50]]]]], [], []], "action", ["subexpr", "action", ["testprotectedApi"], [], ["loc", [null, [2, 58], [2, 85]]]]], 0, null, ["loc", [null, [2, 0], [2, 122]]]], ["content", "outlet", ["loc", [null, [3, 0], [3, 10]]]]],
+      statements: [["block", "paper-button", [], ["class", "login-options", "raised", true, "primary", true, "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [2, 70], [2, 75]]]]], [], []], "action", ["subexpr", "action", ["testprotectedApi"], [], ["loc", [null, [2, 83], [2, 110]]]]], 0, null, ["loc", [null, [2, 0], [2, 147]]]], ["content", "outlet", ["loc", [null, [3, 0], [3, 10]]]]],
       locals: [],
       templates: [child0]
     };
@@ -5810,7 +5948,7 @@ define("embtest/templates/login", ["exports"], function (exports) {
                 "column": 1
               },
               "end": {
-                "line": 11,
+                "line": 12,
                 "column": 1
               }
             },
@@ -5826,7 +5964,7 @@ define("embtest/templates/login", ["exports"], function (exports) {
             dom.appendChild(el0, el1);
             var el1 = dom.createComment("");
             dom.appendChild(el0, el1);
-            var el1 = dom.createTextNode("\n		");
+            var el1 = dom.createTextNode("\n		\n		");
             dom.appendChild(el0, el1);
             var el1 = dom.createComment("");
             dom.appendChild(el0, el1);
@@ -5840,7 +5978,7 @@ define("embtest/templates/login", ["exports"], function (exports) {
             morphs[1] = dom.createMorphAt(fragment, 3, 3, contextualElement);
             return morphs;
           },
-          statements: [["inline", "paper-input", [], ["label", "Email", "value", ["subexpr", "@mut", [["get", "email", ["loc", [null, [9, 36], [9, 41]]]]], [], []], "required", true, "required-errortext", "Email is required."], ["loc", [null, [9, 2], [9, 97]]]], ["inline", "paper-input", [], ["label", "Phone Number", "value", ["subexpr", "@mut", [["get", "number", ["loc", [null, [10, 43], [10, 49]]]]], [], []]], ["loc", [null, [10, 2], [10, 51]]]]],
+          statements: [["inline", "paper-input", [], ["label", "Email", "isTouched", ["subexpr", "@mut", [["get", "emailTouched", ["loc", [null, [9, 41], [9, 53]]]]], [], []], "value", ["subexpr", "@mut", [["get", "user.email", ["loc", [null, [9, 60], [9, 70]]]]], [], []], "required", true, "type", "email", "icon-class", "email", "required-errortext", "Email is required.", "errText", ["subexpr", "@mut", [["get", "emailValidation", ["loc", [null, [9, 165], [9, 180]]]]], [], []]], ["loc", [null, [9, 2], [9, 182]]]], ["inline", "paper-input", [], ["label", "Phone Number", "isTouched", ["subexpr", "@mut", [["get", "numberTouched", ["loc", [null, [11, 48], [11, 61]]]]], [], []], "type", "tel", "value", ["subexpr", "@mut", [["get", "user.number", ["loc", [null, [11, 80], [11, 91]]]]], [], []], "errText", ["subexpr", "@mut", [["get", "numberValidation", ["loc", [null, [11, 100], [11, 116]]]]], [], []]], ["loc", [null, [11, 2], [11, 118]]]]],
           locals: [],
           templates: []
         };
@@ -5853,11 +5991,11 @@ define("embtest/templates/login", ["exports"], function (exports) {
             "loc": {
               "source": null,
               "start": {
-                "line": 14,
+                "line": 15,
                 "column": 1
               },
               "end": {
-                "line": 16,
+                "line": 17,
                 "column": 1
               }
             },
@@ -5882,13 +6020,49 @@ define("embtest/templates/login", ["exports"], function (exports) {
             morphs[0] = dom.createMorphAt(fragment, 1, 1, contextualElement);
             return morphs;
           },
-          statements: [["inline", "paper-input", [], ["label", "Confirm Password", "value", ["subexpr", "@mut", [["get", "cnfpassword", ["loc", [null, [15, 47], [15, 58]]]]], [], []]], ["loc", [null, [15, 2], [15, 60]]]]],
+          statements: [["inline", "paper-input", [], ["label", "Confirm Password", "isTouched", ["subexpr", "@mut", [["get", "password2Touched", ["loc", [null, [16, 52], [16, 68]]]]], [], []], "type", "password", "value", ["subexpr", "@mut", [["get", "user.password2", ["loc", [null, [16, 92], [16, 106]]]]], [], []], "errText", ["subexpr", "@mut", [["get", "passwordsMatchValidation", ["loc", [null, [16, 115], [16, 139]]]]], [], []]], ["loc", [null, [16, 2], [16, 141]]]]],
           locals: [],
           templates: []
         };
       })();
       var child3 = (function () {
         var child0 = (function () {
+          var child0 = (function () {
+            return {
+              meta: {
+                "fragmentReason": false,
+                "revision": "Ember@2.3.0",
+                "loc": {
+                  "source": null,
+                  "start": {
+                    "line": 22,
+                    "column": 1
+                  },
+                  "end": {
+                    "line": 22,
+                    "column": 68
+                  }
+                },
+                "moduleName": "embtest/templates/login.hbs"
+              },
+              isEmpty: false,
+              arity: 0,
+              cachedFragment: null,
+              hasRendered: false,
+              buildFragment: function buildFragment(dom) {
+                var el0 = dom.createDocumentFragment();
+                var el1 = dom.createTextNode("Submit");
+                dom.appendChild(el0, el1);
+                return el0;
+              },
+              buildRenderNodes: function buildRenderNodes() {
+                return [];
+              },
+              statements: [],
+              locals: [],
+              templates: []
+            };
+          })();
           return {
             meta: {
               "fragmentReason": false,
@@ -5896,12 +6070,12 @@ define("embtest/templates/login", ["exports"], function (exports) {
               "loc": {
                 "source": null,
                 "start": {
-                  "line": 19,
+                  "line": 20,
                   "column": 1
                 },
                 "end": {
-                  "line": 19,
-                  "column": 68
+                  "line": 24,
+                  "column": 1
                 }
               },
               "moduleName": "embtest/templates/login.hbs"
@@ -5912,16 +6086,100 @@ define("embtest/templates/login", ["exports"], function (exports) {
             hasRendered: false,
             buildFragment: function buildFragment(dom) {
               var el0 = dom.createDocumentFragment();
-              var el1 = dom.createTextNode("Submit");
+              var el1 = dom.createTextNode("		\n	");
+              dom.appendChild(el0, el1);
+              var el1 = dom.createComment("");
+              dom.appendChild(el0, el1);
+              var el1 = dom.createTextNode("\n\n");
               dom.appendChild(el0, el1);
               return el0;
             },
-            buildRenderNodes: function buildRenderNodes() {
-              return [];
+            buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+              var morphs = new Array(1);
+              morphs[0] = dom.createMorphAt(fragment, 1, 1, contextualElement);
+              return morphs;
             },
-            statements: [],
+            statements: [["block", "paper-button", [], ["action", ["subexpr", "action", ["authenticate"], [], ["loc", [null, [22, 24], [22, 47]]]], "primary", true], 0, null, ["loc", [null, [22, 1], [22, 85]]]]],
             locals: [],
-            templates: []
+            templates: [child0]
+          };
+        })();
+        var child1 = (function () {
+          var child0 = (function () {
+            return {
+              meta: {
+                "fragmentReason": false,
+                "revision": "Ember@2.3.0",
+                "loc": {
+                  "source": null,
+                  "start": {
+                    "line": 28,
+                    "column": 1
+                  },
+                  "end": {
+                    "line": 28,
+                    "column": 70
+                  }
+                },
+                "moduleName": "embtest/templates/login.hbs"
+              },
+              isEmpty: false,
+              arity: 0,
+              cachedFragment: null,
+              hasRendered: false,
+              buildFragment: function buildFragment(dom) {
+                var el0 = dom.createDocumentFragment();
+                var el1 = dom.createTextNode("Register");
+                dom.appendChild(el0, el1);
+                return el0;
+              },
+              buildRenderNodes: function buildRenderNodes() {
+                return [];
+              },
+              statements: [],
+              locals: [],
+              templates: []
+            };
+          })();
+          return {
+            meta: {
+              "fragmentReason": false,
+              "revision": "Ember@2.3.0",
+              "loc": {
+                "source": null,
+                "start": {
+                  "line": 26,
+                  "column": 2
+                },
+                "end": {
+                  "line": 29,
+                  "column": 1
+                }
+              },
+              "moduleName": "embtest/templates/login.hbs"
+            },
+            isEmpty: false,
+            arity: 0,
+            cachedFragment: null,
+            hasRendered: false,
+            buildFragment: function buildFragment(dom) {
+              var el0 = dom.createDocumentFragment();
+              var el1 = dom.createTextNode("		\n	");
+              dom.appendChild(el0, el1);
+              var el1 = dom.createComment("");
+              dom.appendChild(el0, el1);
+              var el1 = dom.createTextNode("\n");
+              dom.appendChild(el0, el1);
+              return el0;
+            },
+            buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+              var morphs = new Array(1);
+              morphs[0] = dom.createMorphAt(fragment, 1, 1, contextualElement);
+              return morphs;
+            },
+            statements: [["block", "paper-button", [], ["action", ["subexpr", "action", ["registerUser"], [], ["loc", [null, [28, 24], [28, 47]]]], "primary", true], 0, null, ["loc", [null, [28, 1], [28, 87]]]]],
+            locals: [],
+            templates: [child0]
           };
         })();
         return {
@@ -5931,11 +6189,11 @@ define("embtest/templates/login", ["exports"], function (exports) {
             "loc": {
               "source": null,
               "start": {
-                "line": 17,
-                "column": 1
+                "line": 19,
+                "column": 0
               },
               "end": {
-                "line": 20,
+                "line": 30,
                 "column": 1
               }
             },
@@ -5947,61 +6205,28 @@ define("embtest/templates/login", ["exports"], function (exports) {
           hasRendered: false,
           buildFragment: function buildFragment(dom) {
             var el0 = dom.createDocumentFragment();
-            var el1 = dom.createTextNode("		\n	");
-            dom.appendChild(el0, el1);
             var el1 = dom.createComment("");
             dom.appendChild(el0, el1);
             var el1 = dom.createTextNode("\n");
             dom.appendChild(el0, el1);
+            var el1 = dom.createComment("");
+            dom.appendChild(el0, el1);
             return el0;
           },
           buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-            var morphs = new Array(1);
-            morphs[0] = dom.createMorphAt(fragment, 1, 1, contextualElement);
+            var morphs = new Array(2);
+            morphs[0] = dom.createMorphAt(fragment, 0, 0, contextualElement);
+            morphs[1] = dom.createMorphAt(fragment, 2, 2, contextualElement);
+            dom.insertBoundary(fragment, 0);
+            dom.insertBoundary(fragment, null);
             return morphs;
           },
-          statements: [["block", "paper-button", [], ["action", ["subexpr", "action", ["authenticate"], [], ["loc", [null, [19, 24], [19, 47]]]], "primary", true], 0, null, ["loc", [null, [19, 1], [19, 85]]]]],
+          statements: [["block", "animated-if", [], ["condition", ["subexpr", "@mut", [["get", "login", ["loc", [null, [20, 26], [20, 31]]]]], [], []]], 0, null, ["loc", [null, [20, 1], [24, 17]]]], ["block", "animated-if", [], ["condition", ["subexpr", "@mut", [["get", "signup", ["loc", [null, [26, 27], [26, 33]]]]], [], []]], 1, null, ["loc", [null, [26, 2], [29, 17]]]]],
           locals: [],
-          templates: [child0]
+          templates: [child0, child1]
         };
       })();
       var child4 = (function () {
-        var child0 = (function () {
-          return {
-            meta: {
-              "fragmentReason": false,
-              "revision": "Ember@2.3.0",
-              "loc": {
-                "source": null,
-                "start": {
-                  "line": 23,
-                  "column": 1
-                },
-                "end": {
-                  "line": 23,
-                  "column": 70
-                }
-              },
-              "moduleName": "embtest/templates/login.hbs"
-            },
-            isEmpty: false,
-            arity: 0,
-            cachedFragment: null,
-            hasRendered: false,
-            buildFragment: function buildFragment(dom) {
-              var el0 = dom.createDocumentFragment();
-              var el1 = dom.createTextNode("Register");
-              dom.appendChild(el0, el1);
-              return el0;
-            },
-            buildRenderNodes: function buildRenderNodes() {
-              return [];
-            },
-            statements: [],
-            locals: [],
-            templates: []
-          };
-        })();
         return {
           meta: {
             "fragmentReason": false,
@@ -6009,11 +6234,11 @@ define("embtest/templates/login", ["exports"], function (exports) {
             "loc": {
               "source": null,
               "start": {
-                "line": 21,
-                "column": 2
+                "line": 30,
+                "column": 1
               },
               "end": {
-                "line": 24,
+                "line": 33,
                 "column": 1
               }
             },
@@ -6025,7 +6250,7 @@ define("embtest/templates/login", ["exports"], function (exports) {
           hasRendered: false,
           buildFragment: function buildFragment(dom) {
             var el0 = dom.createDocumentFragment();
-            var el1 = dom.createTextNode("		\n	");
+            var el1 = dom.createTextNode("\n	");
             dom.appendChild(el0, el1);
             var el1 = dom.createComment("");
             dom.appendChild(el0, el1);
@@ -6038,9 +6263,9 @@ define("embtest/templates/login", ["exports"], function (exports) {
             morphs[0] = dom.createMorphAt(fragment, 1, 1, contextualElement);
             return morphs;
           },
-          statements: [["block", "paper-button", [], ["action", ["subexpr", "action", ["registerUser"], [], ["loc", [null, [23, 24], [23, 47]]]], "primary", true], 0, null, ["loc", [null, [23, 1], [23, 87]]]]],
+          statements: [["inline", "paper-progress-circular", [], ["class", "sm-hue-2", "size", "sm"], ["loc", [null, [32, 1], [32, 55]]]]],
           locals: [],
-          templates: [child0]
+          templates: []
         };
       })();
       return {
@@ -6057,7 +6282,7 @@ define("embtest/templates/login", ["exports"], function (exports) {
               "column": 0
             },
             "end": {
-              "line": 25,
+              "line": 35,
               "column": 0
             }
           },
@@ -6087,26 +6312,26 @@ define("embtest/templates/login", ["exports"], function (exports) {
           dom.appendChild(el0, el1);
           var el1 = dom.createComment("");
           dom.appendChild(el0, el1);
-          var el1 = dom.createComment("");
+          var el1 = dom.createTextNode("\n");
           dom.appendChild(el0, el1);
           var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createTextNode("	\n");
           dom.appendChild(el0, el1);
           return el0;
         },
         buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-          var morphs = new Array(7);
+          var morphs = new Array(6);
           morphs[0] = dom.createMorphAt(fragment, 0, 0, contextualElement);
           morphs[1] = dom.createMorphAt(fragment, 2, 2, contextualElement);
           morphs[2] = dom.createMorphAt(fragment, 4, 4, contextualElement);
           morphs[3] = dom.createMorphAt(fragment, 6, 6, contextualElement);
           morphs[4] = dom.createMorphAt(fragment, 8, 8, contextualElement);
-          morphs[5] = dom.createMorphAt(fragment, 9, 9, contextualElement);
-          morphs[6] = dom.createMorphAt(fragment, 10, 10, contextualElement);
+          morphs[5] = dom.createMorphAt(fragment, 10, 10, contextualElement);
           dom.insertBoundary(fragment, 0);
-          dom.insertBoundary(fragment, null);
           return morphs;
         },
-        statements: [["block", "paper-toolbar", [], [], 0, null, ["loc", [null, [2, 1], [5, 19]]]], ["inline", "paper-input", [], ["label", "Name", "value", ["subexpr", "@mut", [["get", "name", ["loc", [null, [6, 34], [6, 38]]]]], [], []]], ["loc", [null, [6, 1], [6, 40]]]], ["block", "animated-if", [], ["condition", ["subexpr", "@mut", [["get", "signup", ["loc", [null, [8, 26], [8, 32]]]]], [], []]], 1, null, ["loc", [null, [8, 1], [11, 17]]]], ["inline", "paper-input", [], ["label", "Password", "value", ["subexpr", "@mut", [["get", "password", ["loc", [null, [13, 38], [13, 46]]]]], [], []]], ["loc", [null, [13, 1], [13, 48]]]], ["block", "animated-if", [], ["condition", ["subexpr", "@mut", [["get", "signup", ["loc", [null, [14, 26], [14, 32]]]]], [], []]], 2, null, ["loc", [null, [14, 1], [16, 17]]]], ["block", "animated-if", [], ["condition", ["subexpr", "@mut", [["get", "login", ["loc", [null, [17, 26], [17, 31]]]]], [], []]], 3, null, ["loc", [null, [17, 1], [20, 17]]]], ["block", "animated-if", [], ["condition", ["subexpr", "@mut", [["get", "signup", ["loc", [null, [21, 27], [21, 33]]]]], [], []]], 4, null, ["loc", [null, [21, 2], [24, 17]]]]],
+        statements: [["block", "paper-toolbar", [], [], 0, null, ["loc", [null, [2, 1], [5, 19]]]], ["inline", "paper-input", [], ["label", "Name", "isTouched", ["subexpr", "@mut", [["get", "nameTouched", ["loc", [null, [6, 38], [6, 49]]]]], [], []], "value", ["subexpr", "@mut", [["get", "user.name", ["loc", [null, [6, 56], [6, 65]]]]], [], []], "type", "text", "errText", ["subexpr", "@mut", [["get", "nameValidation", ["loc", [null, [6, 86], [6, 100]]]]], [], []]], ["loc", [null, [6, 1], [6, 102]]]], ["block", "animated-if", [], ["condition", ["subexpr", "@mut", [["get", "signup", ["loc", [null, [8, 26], [8, 32]]]]], [], []]], 1, null, ["loc", [null, [8, 1], [12, 17]]]], ["inline", "paper-input", [], ["label", "Password", "isTouched", ["subexpr", "@mut", [["get", "password1Touched", ["loc", [null, [14, 43], [14, 59]]]]], [], []], "errText", ["subexpr", "@mut", [["get", "passwordValidation", ["loc", [null, [14, 68], [14, 86]]]]], [], []], "type", "password", "value", ["subexpr", "@mut", [["get", "user.password1", ["loc", [null, [14, 109], [14, 123]]]]], [], []]], ["loc", [null, [14, 1], [14, 125]]]], ["block", "animated-if", [], ["condition", ["subexpr", "@mut", [["get", "signup", ["loc", [null, [15, 26], [15, 32]]]]], [], []]], 2, null, ["loc", [null, [15, 1], [17, 17]]]], ["block", "if", [["get", "notLoading", ["loc", [null, [19, 6], [19, 16]]]]], [], 3, 4, ["loc", [null, [19, 0], [33, 8]]]]],
         locals: [],
         templates: [child0, child1, child2, child3, child4]
       };
@@ -6125,7 +6350,7 @@ define("embtest/templates/login", ["exports"], function (exports) {
             "column": 0
           },
           "end": {
-            "line": 26,
+            "line": 36,
             "column": 0
           }
         },
@@ -6148,7 +6373,7 @@ define("embtest/templates/login", ["exports"], function (exports) {
         dom.insertBoundary(fragment, null);
         return morphs;
       },
-      statements: [["block", "paper-card", [], ["class", "login-card"], 0, null, ["loc", [null, [1, 0], [25, 15]]]]],
+      statements: [["block", "paper-card", [], ["class", "login-card"], 0, null, ["loc", [null, [1, 0], [35, 15]]]]],
       locals: [],
       templates: [child0]
     };
@@ -6242,7 +6467,7 @@ catch(err) {
 
 /* jshint ignore:start */
 if (!runningTests) {
-  require("embtest/app")["default"].create({"name":"embtest","version":"0.0.0+44d9a07b"});
+  require("embtest/app")["default"].create({"name":"embtest","version":"0.0.0+eff814d0"});
 }
 /* jshint ignore:end */
 //# sourceMappingURL=embtest.map
