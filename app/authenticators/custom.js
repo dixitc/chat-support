@@ -6,7 +6,11 @@ export default Base.extend({
     restore: function(data) {
         return new Ember.RSVP.Promise(function(resolve, reject) {
             if (!Ember.isEmpty(data.token)) {
-                console.log(data.token)
+                console.log('RESTORING SESSION');
+
+                //parse user id from token
+                //get user
+                //set user as current user
                 resolve(data);
             } else {
                 reject();

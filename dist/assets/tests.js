@@ -22,7 +22,7 @@ define('embtest/tests/authenticators/custom.jshint', ['exports'], function (expo
   QUnit.module('JSHint - authenticators');
   QUnit.test('authenticators/custom.js should pass jshint', function (assert) {
     assert.expect(1);
-    assert.ok(false, 'authenticators/custom.js should pass jshint.\nauthenticators/custom.js: line 9, col 40, Missing semicolon.\nauthenticators/custom.js: line 34, col 38, \'error\' is defined but never used.\nauthenticators/custom.js: line 34, col 30, \'status\' is defined but never used.\n\n3 errors');
+    assert.ok(false, 'authenticators/custom.js should pass jshint.\nauthenticators/custom.js: line 38, col 38, \'error\' is defined but never used.\nauthenticators/custom.js: line 38, col 30, \'status\' is defined but never used.\n\n2 errors');
   });
 });
 define('embtest/tests/authorizers/custom.jshint', ['exports'], function (exports) {
@@ -58,7 +58,7 @@ define('embtest/tests/controllers/dashboard.jshint', ['exports'], function (expo
   QUnit.module('JSHint - controllers');
   QUnit.test('controllers/dashboard.js should pass jshint', function (assert) {
     assert.expect(1);
-    assert.ok(false, 'controllers/dashboard.js should pass jshint.\ncontrollers/dashboard.js: line 6, col 17, \'self\' is defined but never used.\n\n1 error');
+    assert.ok(false, 'controllers/dashboard.js should pass jshint.\ncontrollers/dashboard.js: line 7, col 17, \'self\' is defined but never used.\ncontrollers/dashboard.js: line 8, col 17, \'user\' is defined but never used.\ncontrollers/dashboard.js: line 23, col 39, Missing semicolon.\ncontrollers/dashboard.js: line 24, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 32, col 51, Missing semicolon.\ncontrollers/dashboard.js: line 35, col 68, Missing semicolon.\ncontrollers/dashboard.js: line 38, col 42, Missing semicolon.\ncontrollers/dashboard.js: line 42, col 43, Missing semicolon.\ncontrollers/dashboard.js: line 44, col 47, Missing semicolon.\ncontrollers/dashboard.js: line 47, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 52, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 53, col 44, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 55, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 58, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 61, col 20, Missing semicolon.\ncontrollers/dashboard.js: line 17, col 26, \'io\' is not defined.\ncontrollers/dashboard.js: line 23, col 17, \'addChatMessage\' is not defined.\ncontrollers/dashboard.js: line 42, col 21, \'addChatMessage\' is not defined.\ncontrollers/dashboard.js: line 29, col 25, \'$\' is not defined.\ncontrollers/dashboard.js: line 31, col 34, \'$\' is not defined.\ncontrollers/dashboard.js: line 40, col 35, \'$\' is not defined.\ncontrollers/dashboard.js: line 44, col 21, \'generateChatWindow\' is not defined.\ncontrollers/dashboard.js: line 54, col 17, \'log\' is not defined.\ncontrollers/dashboard.js: line 57, col 17, \'log\' is not defined.\ncontrollers/dashboard.js: line 60, col 21, \'addChatTyping\' is not defined.\ncontrollers/dashboard.js: line 64, col 17, \'removeChatTyping\' is not defined.\n\n26 errors');
   });
 });
 define('embtest/tests/controllers/login.jshint', ['exports'], function (exports) {
@@ -67,7 +67,7 @@ define('embtest/tests/controllers/login.jshint', ['exports'], function (exports)
   QUnit.module('JSHint - controllers');
   QUnit.test('controllers/login.js should pass jshint', function (assert) {
     assert.expect(1);
-    assert.ok(false, 'controllers/login.js should pass jshint.\ncontrollers/login.js: line 22, col 39, Missing semicolon.\ncontrollers/login.js: line 25, col 38, Missing semicolon.\ncontrollers/login.js: line 74, col 42, Missing semicolon.\ncontrollers/login.js: line 73, col 17, \'user\' is defined but never used.\ncontrollers/login.js: line 108, col 17, \'credentials\' is defined but never used.\ncontrollers/login.js: line 137, col 54, Missing semicolon.\n\n6 errors');
+    assert.ok(false, 'controllers/login.js should pass jshint.\ncontrollers/login.js: line 71, col 44, Missing semicolon.\ncontrollers/login.js: line 70, col 17, \'user\' is defined but never used.\ncontrollers/login.js: line 105, col 17, \'credentials\' is defined but never used.\ncontrollers/login.js: line 139, col 64, Missing semicolon.\n\n4 errors');
   });
 });
 define('embtest/tests/helpers/destroy-app', ['exports', 'ember'], function (exports, _ember) {
@@ -463,7 +463,7 @@ define('embtest/tests/routes/dashboard.jshint', ['exports'], function (exports) 
   QUnit.module('JSHint - routes');
   QUnit.test('routes/dashboard.js should pass jshint', function (assert) {
     assert.expect(1);
-    assert.ok(true, 'routes/dashboard.js should pass jshint.');
+    assert.ok(false, 'routes/dashboard.js should pass jshint.\nroutes/dashboard.js: line 6, col 34, Missing semicolon.\nroutes/dashboard.js: line 7, col 78, Missing semicolon.\nroutes/dashboard.js: line 38, col 39, Missing semicolon.\nroutes/dashboard.js: line 5, col 17, \'transition\' is defined but never used.\n\n4 errors');
   });
 });
 define('embtest/tests/routes/login.jshint', ['exports'], function (exports) {

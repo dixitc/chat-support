@@ -31,7 +31,11 @@ define('embtest/authenticators/custom', ['exports', 'ember', 'ember-simple-auth/
         restore: function restore(data) {
             return new _ember['default'].RSVP.Promise(function (resolve, reject) {
                 if (!_ember['default'].isEmpty(data.token)) {
-                    console.log(data.token);
+                    console.log('RESTORING SESSION');
+
+                    //parse user id from token
+                    //get user
+                    //set user as current user
                     resolve(data);
                 } else {
                     reject();
@@ -374,6 +378,7 @@ define('embtest/controllers/array', ['exports', 'ember'], function (exports, _em
 });
 define('embtest/controllers/dashboard', ['exports', 'ember'], function (exports, _ember) {
 	exports['default'] = _ember['default'].Controller.extend({
+		socketIOService: _ember['default'].inject.service('socket-io'),
 		actions: {
 			testprotectedApi: function testprotectedApi() {
 				var self = this;
@@ -382,159 +387,197 @@ define('embtest/controllers/dashboard', ['exports', 'ember'], function (exports,
 					email: 'asdfasdf'
 
 				});
+			},
+			socketTest: function socketTest() {
+				var socket = io('http://172.16.1.168:3001');
+				socket.emit('join support', {
+					email: 'support@example.com'
+				});
+				//   socket.emit('addsupport' ,{})
+				socket.on("new_msg", function (data) {
+					addChatMessage(data);
+				});
+				socket.on('message received', function (data) {
 
-				user.save().then(function () {
-					//this is basically what happens when you trigger the LoginControllerMixin's "authenticate" action
-
+					console.log("message received");
+					console.log(data);
+					var a = $(".message").filter(function () {
+						return $(this).text() === data.msg;
+					});
+					a.children('img').attr('src', 'images/ic_done_black_24px.svg');
+				});
+				socket.on("user message", function (data) {
+					console.log('new ping');
+					data.user = true;
+					var $chatWindow = $(document.getElementById(data.userEmail));
+					if ($chatWindow.length) {
+						addChatMessage(data);
+					} else {
+						generateChatWindow(data);
+					}
+					socket.emit('userMsg received', data);
+				});
+				socket.on('new user', function (data) {
+					socket.emit('room', {
+						room_name: data.email
+					});
+				});
+				socket.on('joined', function (data) {
+					log('connected');
+				});
+				socket.on('updatechat', function (data1, data2) {
+					log(data2);
+				});
+				socket.on('support typing', function (data) {
+					addChatTyping(data);
+				});
+				// Whenever the server emits 'stop typing', kill the typing message
+				socket.on('stop typing', function (data) {
+					removeChatTyping(data);
 				});
 			}
 		}
 	});
 });
 define('embtest/controllers/login', ['exports', 'ember'], function (exports, _ember) {
-    exports['default'] = _ember['default'].Controller.extend({
-        session: _ember['default'].inject.service('session'),
-        authenticator: 'authenticator:custom',
-        nameTouched: false,
-        emailTouched: false,
-        numberTouched: false,
-        password1Touched: false,
-        password2Touched: false,
-        signup: false,
-        notLoading: true,
-        login: _ember['default'].computed.not('signup'),
-        user: {
-            name: '',
-            email: '',
-            number: '',
-            password1: '',
-            password2: ''
-        },
-        nameValidation: _ember['default'].computed('user.name', 'reset', function () {
-            if (this.get('reset')) {
-                console.log("reset false");
-                return "asdf";
-            } else {
-                console.log("reset true");
-                var _name = this.get('user.name');
-                if (_ember['default'].isEmpty(_name)) {
-                    return "This is required";
-                } else {
-                    return "";
-                }
-            }
-        }),
-        numberValidation: _ember['default'].computed('user.number', function () {
-            var number = this.get('user.number');
-            console.log(_ember['default'].isEmpty(number));
-            console.log(!isNaN(number));
-            if (_ember['default'].isEmpty(number)) {
-                return "This is required";
-            } else if (isNaN(number)) {
-                return "Use numbers";
-            } else {
-                return "";
-            }
-        }),
-        emailIsEmail: _ember['default'].computed.match('user.email', /^.+@.+\..+$/),
-        passwordsMatchValidation: _ember['default'].computed('user.password1', 'user.password2', function () {
-            if (this.get('user.password1') === this.get('user.password2')) {
-                return "";
-            } else {
-                return "Passwords do not match";
-            }
-        }),
-        passwordValidation: _ember['default'].computed('user.password1', function () {
-            var pass1 = this.get('user.password1');
-            if (pass1.length > 5) {
-                return "";
-            } else {
-                return "Must be at least 5 characters";
-            }
-        }),
-        emailValidation: _ember['default'].computed('user.email', function () {
-            var email = this.get('user.email');
-            if (email.match(/^.+@.+\..+$/)) {
-                return "";
-            } else {
-                return "Please provide email in valid format";
-            }
-        }),
-        actions: {
-            validate: function validate() {
-                //method called before register or submit
-                var user = this.get('user');
-                this.set('notLoading', false);
+	exports['default'] = _ember['default'].Controller.extend({
+		session: _ember['default'].inject.service('session'),
+		authenticator: 'authenticator:custom',
+		nameTouched: false,
+		emailTouched: false,
+		numberTouched: false,
+		password1Touched: false,
+		password2Touched: false,
+		signup: false,
+		notLoading: true,
+		login: _ember['default'].computed.not('signup'),
+		user: {
+			name: '',
+			email: '',
+			number: '',
+			password1: '',
+			password2: ''
+		},
+		nameValidation: _ember['default'].computed('user.name', function () {
 
-                this.toggleProperty('nameTouched');
-                this.toggleProperty('emailTouched');
-                this.toggleProperty('numberTouched');
-                this.toggleProperty('password1Touched');
-                this.toggleProperty('password2Touched');
-            },
-            clearForm: function clearForm() {
-                //method called on toggling signup/login
-                if (this.get('nameTouched')) {}
-                this.set('user.name', '');
-                this.set('user.email', '');
-                this.set('user.number', '');
-                this.set('user.password1', '');
-                this.set('user.password2', '');
-                if (this.get('nameTouched')) {
-                    this.toggleProperty('nameTouched');
-                }
-                if (this.get('emailTouched')) {
-                    this.toggleProperty('emailTouched');
-                }
-                if (this.get('numberTouched')) {
-                    this.toggleProperty('numberTouched');
-                }
-                if (this.get('password1Touched')) {
-                    this.toggleProperty('password1Touched');
-                }
-                if (this.get('password2Touched')) {
-                    this.toggleProperty('password2Touched');
-                }
-            },
-            authenticate: function authenticate() {
-                var _this = this;
+			var name = this.get('user.name');
+			if (_ember['default'].isEmpty(name)) {
+				return "This is required";
+			} else {
+				return "";
+			}
+		}),
+		numberValidation: _ember['default'].computed('user.number', function () {
+			var number = this.get('user.number');
+			console.log(_ember['default'].isEmpty(number));
+			console.log(!isNaN(number));
+			if (_ember['default'].isEmpty(number)) {
+				return "This is required";
+			} else if (isNaN(number)) {
+				return "Use numbers";
+			} else {
+				return "";
+			}
+		}),
+		emailIsEmail: _ember['default'].computed.match('user.email', /^.+@.+\..+$/),
+		passwordsMatchValidation: _ember['default'].computed('user.password1', 'user.password2', function () {
+			if (this.get('user.password1') === this.get('user.password2')) {
+				return "";
+			} else {
+				return "Passwords do not match";
+			}
+		}),
+		passwordValidation: _ember['default'].computed('user.password1', function () {
+			var pass1 = this.get('user.password1');
+			if (pass1.length > 5) {
+				return "";
+			} else {
+				return "Must be at least 5 characters";
+			}
+		}),
+		emailValidation: _ember['default'].computed('user.email', function () {
+			var email = this.get('user.email');
+			if (email.match(/^.+@.+\..+$/)) {
+				return "";
+			} else {
+				return "Please provide email in valid format";
+			}
+		}),
+		actions: {
+			validate: function validate() {
+				//method called before register or submit
+				var user = this.get('user');
+				this.set('notLoading', false);
 
-                this.send('validate');
-                var credentials = this.getProperties('user.name', 'user.password1');
-                var self = this;
-                this.get('session').authenticate('authenticator:custom', {
-                    name: self.get('user.name'),
-                    password: self.get('user.password1')
-                })['catch'](function (message) {
-                    _this.set('errorMessage', message);
-                });
-            },
-            togglesignup: function togglesignup() {
+				this.toggleProperty('nameTouched');
+				this.toggleProperty('emailTouched');
+				this.toggleProperty('numberTouched');
+				this.toggleProperty('password1Touched');
+				this.toggleProperty('password2Touched');
+			},
+			clearForm: function clearForm() {
+				//method called on toggling signup/login
+				if (this.get('nameTouched')) {}
+				this.set('user.name', '');
+				this.set('user.email', '');
+				this.set('user.number', '');
+				this.set('user.password1', '');
+				this.set('user.password2', '');
+				if (this.get('nameTouched')) {
+					this.toggleProperty('nameTouched');
+				}
+				if (this.get('emailTouched')) {
+					this.toggleProperty('emailTouched');
+				}
+				if (this.get('numberTouched')) {
+					this.toggleProperty('numberTouched');
+				}
+				if (this.get('password1Touched')) {
+					this.toggleProperty('password1Touched');
+				}
+				if (this.get('password2Touched')) {
+					this.toggleProperty('password2Touched');
+				}
+			},
+			authenticate: function authenticate() {
+				var _this = this;
 
-                this.toggleProperty('signup');
-                this.send('clearForm');
-            },
-            registerUser: function registerUser() {
-                this.send('validate');
-                var self = this;
-                var user = this.store.createRecord('user', {
-                    name: this.get('user.name'),
-                    email: this.get('user.email')
-                });
-                user.set('number', this.get('user.number'));
-                user.set('password', this.get('user.password1'));
-                user.save().then(function () {
-                    //this is basically what happens when you trigger the LoginControllerMixin's "authenticate" action
-                    self.get('session').authenticate('authenticator:custom', {
-                        name: self.get('user.name'),
-                        password: self.get('user.password1')
-                    })['catch'](function (message) {
-                        self.set('errorMessage', message);
-                    });
-                });
-            }
-        }
-    });
+				this.send('validate');
+				var credentials = this.getProperties('user.name', 'user.password1');
+				var self = this;
+				this.get('session').authenticate('authenticator:custom', {
+					name: self.get('user.name'),
+					password: self.get('user.password1')
+				})['catch'](function (message) {
+					_this.set('errorMessage', message);
+				});
+			},
+			togglesignup: function togglesignup() {
+
+				this.toggleProperty('signup');
+				this.send('clearForm');
+			},
+			registerUser: function registerUser() {
+				this.send('validate');
+				var self = this;
+				var user = this.store.createRecord('user', {
+					name: this.get('user.name'),
+					email: this.get('user.email')
+				});
+				user.set('number', this.get('user.number'));
+				user.set('password', this.get('user.password1'));
+				user.save().then(function () {
+					//this is basically what happens when you trigger the LoginControllerMixin's "authenticate" action
+					self.get('session').authenticate('authenticator:custom', {
+						name: self.get('user.name'),
+						password: self.get('user.password1')
+					})['catch'](function (message) {
+						self.set('errorMessage', message);
+					});
+				});
+			}
+		}
+	});
 });
 define('embtest/controllers/object', ['exports', 'ember'], function (exports, _ember) {
   exports['default'] = _ember['default'].Controller;
@@ -651,6 +694,7 @@ define('embtest/router', ['exports', 'ember', 'embtest/config/environment'], fun
 });
 define('embtest/routes/application', ['exports', 'ember', 'ember-simple-auth/mixins/application-route-mixin'], function (exports, _ember, _emberSimpleAuthMixinsApplicationRouteMixin) {
 	exports['default'] = _ember['default'].Route.extend(_emberSimpleAuthMixinsApplicationRouteMixin['default'], {
+
 		actions: {
 			invalidateSession: function invalidateSession() {
 				this.get('session').invalidate();
@@ -659,10 +703,48 @@ define('embtest/routes/application', ['exports', 'ember', 'ember-simple-auth/mix
 	});
 });
 define('embtest/routes/dashboard', ['exports', 'ember', 'ember-simple-auth/mixins/authenticated-route-mixin'], function (exports, _ember, _emberSimpleAuthMixinsAuthenticatedRouteMixin) {
-	exports['default'] = _ember['default'].Route.extend(_emberSimpleAuthMixinsAuthenticatedRouteMixin['default'], {});
+	exports['default'] = _ember['default'].Route.extend(_emberSimpleAuthMixinsAuthenticatedRouteMixin['default'], {
+		beforeModel: function beforeModel(transition) {
+			var _this = this;
+
+			this._super.apply(this, arguments);
+			var token = this.get('session.session.content.authenticated.token');
+
+			if (!_ember['default'].isEmpty(token)) {
+				(function () {
+					var userInfo = atob(token.split('.')[1]);
+					var user_id = JSON.parse(userInfo).id;
+					var self = _this;
+					console.log(user_id);
+					console.log('RESTORING SESSION');
+
+					//parse user id from token
+					//get user
+					//set user as current user
+					_this.store.findRecord('user', user_id, {
+						reload: true
+					})['catch'](function (reason) {
+						console.log(reason);
+						//If failed to authenticate token invalidate session
+						//	self.get( 'session' );
+						//		.invalidate()
+						self.get('session').invalidate();
+						if (reason.errors[0].status === '403') {
+							// Do some specific error handling for 403
+						} else {
+								// At this point I want to call the default error handler
+							}
+					});
+				})();
+			} else {
+
+					this.transitionTo('login');
+				}
+		}
+	});
 });
-define('embtest/routes/login', ['exports', 'ember'], function (exports, _ember) {
-  exports['default'] = _ember['default'].Route.extend({});
+define('embtest/routes/login', ['exports', 'ember', 'ember-simple-auth/mixins/unauthenticated-route-mixin'], function (exports, _ember, _emberSimpleAuthMixinsUnauthenticatedRouteMixin) {
+  exports['default'] = _ember['default'].Route.extend(_emberSimpleAuthMixinsUnauthenticatedRouteMixin['default'], {});
 });
 define('embtest/routes/profile', ['exports', 'ember', 'ember-simple-auth/mixins/authenticated-route-mixin'], function (exports, _ember, _emberSimpleAuthMixinsAuthenticatedRouteMixin) {
 	exports['default'] = _ember['default'].Route.extend(_emberSimpleAuthMixinsAuthenticatedRouteMixin['default'], {});
@@ -757,6 +839,128 @@ define('embtest/services/constants', ['exports', 'ember'], function (exports, _e
     MEDIA_PRIORITY: ['gt-lg', 'lg', 'gt-md', 'md', 'gt-sm', 'sm']
   });
 });
+define('embtest/services/primus', ['exports', 'ember', 'ember-websockets/helpers/primus-proxy'], function (exports, _ember, _emberWebsocketsHelpersPrimusProxy) {
+
+  var forEach = Array.prototype.forEach;
+  var filter = Array.prototype.filter;
+  var isArray = _ember['default'].isArray;
+
+  exports['default'] = _ember['default'].Service.extend({
+    /*
+    * Each element in the array is of the form:
+    *
+    * {
+    *    url: 'string'
+    *    socket: Primus Proxy object
+    * }
+    */
+    sockets: null,
+
+    init: function init() {
+      this._super.apply(this, arguments);
+      this.sockets = _ember['default'].A();
+    },
+
+    /*
+    * socketFor returns a primus client proxy object. On this object there is a property `socket`
+    * which contains the actual primus client object. This primus client object is cached based off of the url meaning
+    * multiple requests for the same socket will return the same object.
+    */
+    socketFor: function socketFor(url) {
+      var protocols = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+
+      var proxy = this.findSocketInCache(this.get('sockets'), url);
+
+      if (proxy && this.primusIsNotClosed(proxy.socket)) {
+        return proxy.socket;
+      }
+
+      if (!isArray(protocols)) {
+        protocols = [protocols];
+      }
+
+      proxy = _emberWebsocketsHelpersPrimusProxy['default'].create({
+        content: this,
+        protocols: protocols,
+        socket: Primus.connect(url, {
+          reconnect: {
+            max: Infinity,
+            min: 500,
+            retries: 10
+          }
+        })
+      });
+
+      // If there is an existing socket in place we simply update the primus client object and not
+      // the whole proxy as we dont want to destroy the previous listeners.
+      var existingSocket = this.findSocketInCache(this.get('sockets'), url);
+      if (existingSocket) {
+        existingSocket.socket.socket = proxy.socket;
+        return existingSocket.socket;
+      } else {
+        this.get('sockets').pushObject({
+          'url': url,
+          socket: proxy
+        });
+      }
+
+      return proxy;
+    },
+
+    /*
+    * closeSocketFor closes the socket for a given url.
+    */
+    closeSocketFor: function closeSocketFor(url) {
+      var _this = this;
+
+      var filteredSockets = [];
+
+      forEach.call(this.get('sockets'), function (item) {
+        if (item.url === _this.normalizeURL(url)) {
+          item.socket.close();
+        } else {
+          filteredSockets.push(item);
+        }
+      });
+      this.set('sockets', _ember['default'].A(filteredSockets));
+    },
+
+    /*
+    * The native websocket object will transform urls without a pathname to have just a /.
+    * As an example: ws://localhost:8080 would actually be ws://localhost:8080/ but ws://example.com/foo would not
+    * change. This function does this transformation to stay inline with the native websocket implementation.
+    */
+    normalizeURL: function normalizeURL(url) {
+      var parsedUrl = new URI(url);
+
+      if (parsedUrl.path() === '/' && url.slice(-1) !== '/') {
+        return url + '/';
+      }
+
+      return url;
+    },
+
+    primusIsNotClosed: function primusIsNotClosed(websocket) {
+      return true;
+      //return websocket.socket.readyState !== window.WebSocket.CLOSED;
+    },
+
+    /*
+    * Returns the socket object from the cache if one matches the url else undefined
+    */
+    findSocketInCache: function findSocketInCache(socketsCache, url) {
+      var _this2 = this;
+
+      var cachedResults = filter.call(socketsCache, function (websocket) {
+        return websocket['url'] === _this2.normalizeURL(url);
+      });
+
+      if (cachedResults.length > 0) {
+        return cachedResults[0];
+      }
+    }
+  });
+});
 define('embtest/services/session', ['exports', 'ember-simple-auth/services/session'], function (exports, _emberSimpleAuthServicesSession) {
   exports['default'] = _emberSimpleAuthServicesSession['default'];
 });
@@ -824,6 +1028,112 @@ define('embtest/services/sniffer', ['exports', 'ember'], function (exports, _emb
       this.set('vendorPrefix', vendorPrefix);
     }
 
+  });
+});
+define('embtest/services/socket-io', ['exports', 'ember', 'ember-websockets/helpers/socketio-proxy'], function (exports, _ember, _emberWebsocketsHelpersSocketioProxy) {
+
+  var filter = Array.prototype.filter;
+  var forEach = Array.prototype.forEach;
+
+  exports['default'] = _ember['default'].Service.extend({
+    /*
+    * Each element in the array is of the form:
+    *
+    * {
+    *    url: 'string'
+    *    socket: SocketIO Proxy object
+    * }
+    */
+    sockets: null,
+
+    init: function init() {
+      this._super.apply(this, arguments);
+      this.sockets = _ember['default'].A();
+    },
+
+    /*
+    * socketFor returns a socketio proxy object. On this object there is a property `socket`
+    * which contains the actual socketio object. This socketio object is cached based off of the
+    * url meaning multiple requests for the same socket will return the same object.
+    */
+    socketFor: function socketFor(url) {
+      var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+      var proxy = this.findSocketInCache(this.get('sockets'), url);
+
+      if (proxy && this.socketIsNotClosed(proxy.socket)) {
+        return proxy.socket;
+      }
+
+      proxy = _emberWebsocketsHelpersSocketioProxy['default'].create({
+        content: this,
+        socket: io(this.normalizeURL(url), options)
+      });
+
+      proxy.socket.connect();
+
+      this.get('sockets').pushObject({
+        url: this.normalizeURL(url),
+        socket: proxy
+      });
+
+      return proxy;
+    },
+
+    /*
+    * The native websocket object will transform urls without a pathname to have just a /.
+    * As an example: ws://localhost:8080 would actually be ws://localhost:8080/ but ws://example.com/foo would not
+    * change. This function does this transformation to stay inline with the native websocket implementation.
+    *
+    */
+    normalizeURL: function normalizeURL(url) {
+      var parsedUrl = new URI(url);
+
+      if (parsedUrl.path() === '/' && url.slice(-1) !== '/') {
+        return url + '/';
+      }
+
+      return url;
+    },
+
+    socketIsNotClosed: function socketIsNotClosed(socket) {
+      return socket.socket.io.readyState !== 'closed';
+    },
+
+    /*
+    * closeSocketFor closes the socket for a given url.
+    */
+    closeSocketFor: function closeSocketFor(url) {
+      var _this = this;
+
+      var filteredSockets = [];
+
+      forEach.call(this.get('sockets'), function (item) {
+        if (item.url === _this.normalizeURL(url)) {
+          item.socket.close();
+          item.socket.socket.removeAllListeners();
+        } else {
+          filteredSockets.push(item);
+        }
+      });
+
+      this.set('sockets', _ember['default'].A(filteredSockets));
+    },
+
+    /*
+    * Returns the socket object from the cache if one matches the url else undefined
+    */
+    findSocketInCache: function findSocketInCache(socketsCache, url) {
+      var _this2 = this;
+
+      var cachedResults = filter.call(socketsCache, function (websocket) {
+        return websocket['url'] === _this2.normalizeURL(url);
+      });
+
+      if (cachedResults.length > 0) {
+        return cachedResults[0];
+      }
+    }
   });
 });
 define('embtest/services/transition-events', ['exports', 'ember-css-transitions/services/transition-events'], function (exports, _emberCssTransitionsServicesTransitionEvents) {
@@ -970,6 +1280,125 @@ define('embtest/services/validations', ['exports', 'ember'], function (exports, 
   exports['default'] = _ember['default'].Service.extend({
     init: function init() {
       set(this, 'cache', {});
+    }
+  });
+});
+define('embtest/services/websockets', ['exports', 'ember', 'ember-websockets/helpers/websocket-proxy'], function (exports, _ember, _emberWebsocketsHelpersWebsocketProxy) {
+
+  var forEach = Array.prototype.forEach;
+  var filter = Array.prototype.filter;
+  var isArray = _ember['default'].isArray;
+
+  exports['default'] = _ember['default'].Service.extend({
+    /*
+    * Each element in the array is of the form:
+    *
+    * {
+    *    url: 'string'
+    *    socket: WebSocket Proxy object
+    * }
+    */
+    sockets: null,
+
+    init: function init() {
+      this._super.apply(this, arguments);
+      this.sockets = _ember['default'].A();
+    },
+
+    /*
+    * socketFor returns a websocket proxy object. On this object there is a property `socket`
+    * which contains the actual websocket object. This websocket object is cached based off of the url meaning
+    * multiple requests for the same socket will return the same object.
+    */
+    socketFor: function socketFor(url) {
+      var protocols = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+
+      var proxy = this.findSocketInCache(this.get('sockets'), url);
+
+      if (proxy && this.websocketIsNotClosed(proxy.socket)) {
+        return proxy.socket;
+      }
+
+      // Websockets allows either a string or array of strings to be passed as the second argument.
+      // This normalizes both cases into one where they are all arrays of strings and if you just pass
+      // a single string it becomes an array of one.
+      if (!isArray(protocols)) {
+        protocols = [protocols];
+      }
+
+      proxy = _emberWebsocketsHelpersWebsocketProxy['default'].create({
+        content: this,
+        protocols: protocols,
+        socket: new WebSocket(this.normalizeURL(url), protocols)
+      });
+
+      // If there is an existing socket in place we simply update the websocket object and not
+      // the whole proxy as we dont want to destroy the previous listeners.
+      var existingSocket = this.findSocketInCache(this.get('sockets'), url);
+      if (existingSocket) {
+        existingSocket.socket.socket = proxy.socket;
+        return existingSocket.socket;
+      } else {
+        this.get('sockets').pushObject({
+          url: proxy.socket.url,
+          socket: proxy
+        });
+      }
+
+      return proxy;
+    },
+
+    /*
+    * closeSocketFor closes the socket for a given url.
+    */
+    closeSocketFor: function closeSocketFor(url) {
+      var _this = this;
+
+      var filteredSockets = [];
+
+      forEach.call(this.get('sockets'), function (item) {
+        if (item.url === _this.normalizeURL(url)) {
+          item.socket.close();
+        } else {
+          filteredSockets.push(item);
+        }
+      });
+
+      this.set('sockets', _ember['default'].A(filteredSockets));
+    },
+
+    /*
+    * The native websocket object will transform urls without a pathname to have just a /.
+    * As an example: ws://localhost:8080 would actually be ws://localhost:8080/ but ws://example.com/foo would not
+    * change. This function does this transformation to stay inline with the native websocket implementation.
+    */
+    normalizeURL: function normalizeURL(url) {
+      var parsedUrl = new URI(url);
+
+      if (parsedUrl.path() === '/' && url.slice(-1) !== '/') {
+        return url + '/';
+      }
+
+      return url;
+    },
+
+    websocketIsNotClosed: function websocketIsNotClosed(websocket) {
+      return websocket.socket.readyState !== window.WebSocket.CLOSED;
+    },
+
+    /*
+    * Returns the socket object from the cache if one matches the url else undefined
+    */
+    findSocketInCache: function findSocketInCache(socketsCache, url) {
+      var _this2 = this;
+
+      var cachedResults = filter.call(socketsCache, function (websocket) {
+        return websocket['url'] === _this2.normalizeURL(url);
+      });
+
+      if (cachedResults.length > 0) {
+        return cachedResults[0];
+      }
     }
   });
 });
@@ -1227,7 +1656,7 @@ define("embtest/templates/application", ["exports"], function (exports) {
             "column": 0
           },
           "end": {
-            "line": 24,
+            "line": 25,
             "column": 0
           }
         },
@@ -1249,7 +1678,7 @@ define("embtest/templates/application", ["exports"], function (exports) {
         dom.appendChild(el0, el1);
         var el1 = dom.createElement("div");
         dom.setAttribute(el1, "class", "footer");
-        dom.setAttribute(el1, "style", "\n    position: absolute;\n    bottom: 0px;\n    background: black;\n    width: 100%;\n    height: 60px;\n    background: url('images/footer_bg.png');\n");
+        dom.setAttribute(el1, "style", "\n    position: fixed;\n    bottom: 0px;\n    background: black;\n    width: 100%;\n    z-index:1000;\n    height: 60px;\n    background: url('images/footer_bg.png');\n");
         dom.appendChild(el0, el1);
         var el1 = dom.createTextNode("\n");
         dom.appendChild(el0, el1);
@@ -5732,11 +6161,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           "loc": {
             "source": null,
             "start": {
-              "line": 2,
+              "line": 305,
               "column": 0
             },
             "end": {
-              "line": 2,
+              "line": 305,
               "column": 130
             }
           },
@@ -5749,6 +6178,42 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
         buildFragment: function buildFragment(dom) {
           var el0 = dom.createDocumentFragment();
           var el1 = dom.createTextNode("test protected api");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes() {
+          return [];
+        },
+        statements: [],
+        locals: [],
+        templates: []
+      };
+    })();
+    var child1 = (function () {
+      return {
+        meta: {
+          "fragmentReason": false,
+          "revision": "Ember@2.3.0",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 306,
+              "column": 0
+            },
+            "end": {
+              "line": 306,
+              "column": 128
+            }
+          },
+          "moduleName": "embtest/templates/dashboard.hbs"
+        },
+        isEmpty: false,
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createTextNode("test socket connection");
           dom.appendChild(el0, el1);
           return el0;
         },
@@ -5774,8 +6239,8 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             "column": 0
           },
           "end": {
-            "line": 4,
-            "column": 0
+            "line": 325,
+            "column": 13
           }
         },
         "moduleName": "embtest/templates/dashboard.hbs"
@@ -5790,6 +6255,12 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
         var el2 = dom.createTextNode("Logged in to dashboard");
         dom.appendChild(el1, el2);
         dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n        ");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createElement("style");
+        var el2 = dom.createTextNode("\n\n  body {\n    background: antiquewhite;\n        background: url('chat-background.jpg');\n        background-size: contain;\n    font-family: 'Roboto', sans-serif;\n  }\n  .bubble {\n    position: relative;\n  /*  width: 250px;*/\n   \n    padding: 0px;\n    background: #FCF3D2;\n    -webkit-border-radius: 5px;\n    -moz-border-radius: 5px;\n    border-radius: 5px;\n    -webkit-box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);\n    -moz-box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);\n    box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);\n}\n\n\n\n.pointer {\n        content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n        left: 250px;\n    top: 0px;\n    border-width: 0px 0px 19px 17px;\n    border-color: transparent #e5ffcc;\n}\n\n/*rgb(216, 252, 199)*/\n.rightbubble {\n       position: relative;\n    /* width: auto; */\n    background: #fff;\n    border: #bbb solid 0;\n    -webkit-border-radius: 5px;\n    -moz-border-radius: 5px;\n    border-radius: 5px 0px 5px 5px;\n    margin: 0 auto;\n    z-index: 555;\n    border-color: rgb(0, 0, 0);\n      -webkit-box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);\n    -moz-box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);\n    box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);\n    background: #e5ffcc;\n    margin-bottom: 5px;\n    padding: 7px;\n    line-height: 18px;\n    font-size: 14px;\n    font-weight: 300;\n    min-width: 50px;\n    display: inline-block;\n        padding-right: 35px;\n        padding-top: 5px;\n    float: initial;\n}\n\n\n  .rightbubble:after {\n   content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n    left: 100%;\n    top: 0px;\n       border-width: 0px 0px 9px 6px;\n        border-color: transparent #e5ffcc;\n}\n\n.rightbubble:before {\n    content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n    left: 100%;\n    top: 0px;\n      border-width: 0px 0px 11px 6px;\n    border-color: transparent rgba(169, 173, 165, 0.62);\n}\n\n.leftbubble {\n    background: #fff;\n}\n\n .leftbubble:after {\n    content: \"\";\n    position: absolute;\n    top: 0px;\n    left: 0%;\n    border-style: solid;\n    border-width: -6px 2px -3px -7px;\n    display: block;\n    width: 0;\n    z-index: 1;\n    content: ' ';\n    position: absolute;\n    width: 0;\n    height: 0;\n    left: -8px;\n    right: auto;\n    top: 0px;\n    bottom: auto;\n    border: 8px solid;\n    \n    border-color: white transparent transparent transparent;\n}\n\n .leftbubble:before {\n\n    border-color: transparent;\n   \n}\n\n.imagebubble {\n        padding-right: 5px;\n    padding-bottom: 2px;\n    padding-top: 5px;\n}\n\n\n.inputbubble {\n    position: absolute;\n    bottom: 10px;\n     left: 50px; \n    width: 250px;\n    margin: auto;\n    height: 47px;\n    padding: 0px;\n    z-index: 1000;\n    background: #FFFFFF;\n    -webkit-border-radius: 5px;\n    -moz-border-radius: 5px;\n    border-radius: 5px 0px 5px 5px;\n    -webkit-box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n    -moz-box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n    box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n}\n\n  .inputbubble:after {\n      content: \"\";\n    position: absolute;\n    top: 8px;\n    right: -15;\n    border-style: solid;\n    border-width: 15px 0 15px 15px;\n    border-color: transparent #FFFFFF;\n    display: block;\n    width: 0;\n    z-index: 1;\n    content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n    left: 250px;\n    top: 0px;\n      border-width: 0px 0px 9px 7px;\n    border-color: transparent #fff;\n}\n\n\n.inputMessage {\n        border: none;\n    height: 100%;\n    width: 80%;\n    padding: 10px;\n    outline: none;\n    border-radius: 5px;\n}\n\n.messageLi {\n    text-align: end;\n    margin-top: 10px;\n}\n\n.lileft {\n    text-align: start;\n}\n\n  .fileDiv {\n    display: none;\n        height: 100px;\n    width: 100px;\n    position: absolute;\n    background: green;\n    border-radius: 50%;\n    box-shadow: rgba(97, 97, 97, 0.227451) 2px 2px 7px 4px;\n    top: 60%;\n    left: 200px;\n  }\n\n.logText {\n    background: #d4eaf4;\n    padding: 7px;\n    font-size: 10px;\n      box-shadow: rgba(97, 97, 97, 0.227451) 1px 1px 0px 0px;\n    border-radius: 4px;\n    margin-bottom: 20px;\n}\n\n.statusImg {\n    position: absolute;\n    /* background: red; */\n    height: 11px;\n    /* width: 13px; */\n    bottom: 3px;\n    right: 5px;\n}\n\n\n.typing {\n    padding-right: 5px;\n}\n\n.log {\n    margin: 25px;\n}\n.chatImage {\n    height: 150px;\n}\n\n.chatImageEnlarge {\n        position: fixed;\n    height: auto;\n    max-width: 90%;\n    left: 5%;\n    max-height: 100%;\n    top:5%;\n}\n.spinner {\n\n  width: 50px;\n  height: 20px;\n  text-align: center;\n  font-size: 10px;\n}\n\n.spinner > div {\n  background-color: #333;\n  height: 100%;\n  width: 3px;\n  display: inline-block;\n  margin: 3px;\n  \n  -webkit-animation: sk-stretchdelay 1.2s infinite ease-in-out;\n  animation: sk-stretchdelay 1.2s infinite ease-in-out;\n}\n\n.spinner .rect2 {\n  -webkit-animation-delay: -1.1s;\n  animation-delay: -1.1s;\n}\n\n.spinner .rect3 {\n  -webkit-animation-delay: -1.0s;\n  animation-delay: -1.0s;\n}\n\n.spinner .rect4 {\n  -webkit-animation-delay: -0.9s;\n  animation-delay: -0.9s;\n}\n\n.spinner .rect5 {\n  -webkit-animation-delay: -0.8s;\n  animation-delay: -0.8s;\n}\n\n@-webkit-keyframes sk-stretchdelay {\n  0%, 40%, 100% { -webkit-transform: scaleY(0.4) }  \n  20% { -webkit-transform: scaleY(1.0) }\n}\n\n@keyframes sk-stretchdelay {\n  0%, 40%, 100% { \n    transform: scaleY(0.4);\n    -webkit-transform: scaleY(0.4);\n  }  20% { \n    transform: scaleY(1.0);\n    -webkit-transform: scaleY(1.0);\n  }\n");
+        dom.appendChild(el1, el2);
+        dom.appendChild(el0, el1);
         var el1 = dom.createTextNode("\n");
         dom.appendChild(el0, el1);
         var el1 = dom.createComment("");
@@ -5799,18 +6270,77 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
         var el1 = dom.createComment("");
         dom.appendChild(el0, el1);
         var el1 = dom.createTextNode("\n");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n\n      ");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createElement("ul");
+        dom.setAttribute(el1, "class", "pages");
+        var el2 = dom.createTextNode("\n            ");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createElement("li");
+        dom.setAttribute(el2, "class", "chat page");
+        var el3 = dom.createTextNode("\n                ");
+        dom.appendChild(el2, el3);
+        var el3 = dom.createElement("div");
+        dom.setAttribute(el3, "class", "chatArea");
+        var el4 = dom.createTextNode("\n                    ");
+        dom.appendChild(el3, el4);
+        var el4 = dom.createElement("ul");
+        dom.setAttribute(el4, "class", "messages");
+        var el5 = dom.createTextNode("\n                    ");
+        dom.appendChild(el4, el5);
+        dom.appendChild(el3, el4);
+        var el4 = dom.createTextNode("\n                ");
+        dom.appendChild(el3, el4);
+        dom.appendChild(el2, el3);
+        var el3 = dom.createTextNode("\n    \n            ");
+        dom.appendChild(el2, el3);
+        dom.appendChild(el1, el2);
+        var el2 = dom.createTextNode("\n            ");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createElement("li");
+        dom.setAttribute(el2, "class", "login page");
+        var el3 = dom.createTextNode("\n                ");
+        dom.appendChild(el2, el3);
+        var el3 = dom.createElement("div");
+        dom.setAttribute(el3, "class", "form");
+        var el4 = dom.createTextNode("\n                    ");
+        dom.appendChild(el3, el4);
+        var el4 = dom.createElement("h3");
+        dom.setAttribute(el4, "class", "title");
+        var el5 = dom.createTextNode("\n                        What's your nickname?\n                    ");
+        dom.appendChild(el4, el5);
+        dom.appendChild(el3, el4);
+        var el4 = dom.createTextNode("\n                    ");
+        dom.appendChild(el3, el4);
+        var el4 = dom.createElement("input");
+        dom.setAttribute(el4, "class", "usernameInput");
+        dom.setAttribute(el4, "type", "text");
+        dom.setAttribute(el4, "maxlength", "14");
+        dom.appendChild(el3, el4);
+        var el4 = dom.createTextNode("\n                ");
+        dom.appendChild(el3, el4);
+        dom.appendChild(el2, el3);
+        var el3 = dom.createTextNode("\n            ");
+        dom.appendChild(el2, el3);
+        dom.appendChild(el1, el2);
+        var el2 = dom.createTextNode("\n        ");
+        dom.appendChild(el1, el2);
         dom.appendChild(el0, el1);
         return el0;
       },
       buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-        var morphs = new Array(2);
-        morphs[0] = dom.createMorphAt(fragment, 2, 2, contextualElement);
-        morphs[1] = dom.createMorphAt(fragment, 4, 4, contextualElement);
+        var morphs = new Array(3);
+        morphs[0] = dom.createMorphAt(fragment, 4, 4, contextualElement);
+        morphs[1] = dom.createMorphAt(fragment, 6, 6, contextualElement);
+        morphs[2] = dom.createMorphAt(fragment, 8, 8, contextualElement);
         return morphs;
       },
-      statements: [["block", "paper-button", [], ["class", "login-options", "raised", true, "primary", true, "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [2, 70], [2, 75]]]]], [], []], "action", ["subexpr", "action", ["testprotectedApi"], [], ["loc", [null, [2, 83], [2, 110]]]]], 0, null, ["loc", [null, [2, 0], [2, 147]]]], ["content", "outlet", ["loc", [null, [3, 0], [3, 10]]]]],
+      statements: [["block", "paper-button", [], ["class", "login-options", "raised", true, "primary", true, "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [305, 70], [305, 75]]]]], [], []], "action", ["subexpr", "action", ["testprotectedApi"], [], ["loc", [null, [305, 83], [305, 110]]]]], 0, null, ["loc", [null, [305, 0], [305, 147]]]], ["block", "paper-button", [], ["class", "login-options", "raised", true, "primary", true, "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [306, 70], [306, 75]]]]], [], []], "action", ["subexpr", "action", ["socketTest"], [], ["loc", [null, [306, 83], [306, 104]]]]], 1, null, ["loc", [null, [306, 0], [306, 145]]]], ["content", "outlet", ["loc", [null, [307, 0], [307, 10]]]]],
       locals: [],
-      templates: [child0]
+      templates: [child0, child1]
     };
   })());
 });
@@ -6467,7 +6997,7 @@ catch(err) {
 
 /* jshint ignore:start */
 if (!runningTests) {
-  require("embtest/app")["default"].create({"name":"embtest","version":"0.0.0+eff814d0"});
+  require("embtest/app")["default"].create({"name":"embtest","version":"0.0.0+a93e2f93"});
 }
 /* jshint ignore:end */
 //# sourceMappingURL=embtest.map
