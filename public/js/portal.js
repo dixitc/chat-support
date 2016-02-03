@@ -19,6 +19,7 @@ $( function() {
 	var $currentInput = $usernameInput.focus();
 
 	var socket = io( 'http://172.16.1.168:3001' )
+	setUsername();
 	socket.emit( 'join support', {
 		email: 'support@example.com'
 	} );

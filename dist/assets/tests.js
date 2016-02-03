@@ -22,7 +22,7 @@ define('embtest/tests/authenticators/custom.jshint', ['exports'], function (expo
   QUnit.module('JSHint - authenticators');
   QUnit.test('authenticators/custom.js should pass jshint', function (assert) {
     assert.expect(1);
-    assert.ok(false, 'authenticators/custom.js should pass jshint.\nauthenticators/custom.js: line 38, col 38, \'error\' is defined but never used.\nauthenticators/custom.js: line 38, col 30, \'status\' is defined but never used.\n\n2 errors');
+    assert.ok(false, 'authenticators/custom.js should pass jshint.\nauthenticators/custom.js: line 37, col 38, \'error\' is defined but never used.\nauthenticators/custom.js: line 37, col 30, \'status\' is defined but never used.\n\n2 errors');
   });
 });
 define('embtest/tests/authorizers/custom.jshint', ['exports'], function (exports) {
@@ -58,7 +58,7 @@ define('embtest/tests/controllers/dashboard.jshint', ['exports'], function (expo
   QUnit.module('JSHint - controllers');
   QUnit.test('controllers/dashboard.js should pass jshint', function (assert) {
     assert.expect(1);
-    assert.ok(false, 'controllers/dashboard.js should pass jshint.\ncontrollers/dashboard.js: line 7, col 17, \'self\' is defined but never used.\ncontrollers/dashboard.js: line 8, col 17, \'user\' is defined but never used.\ncontrollers/dashboard.js: line 23, col 39, Missing semicolon.\ncontrollers/dashboard.js: line 24, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 32, col 51, Missing semicolon.\ncontrollers/dashboard.js: line 35, col 68, Missing semicolon.\ncontrollers/dashboard.js: line 38, col 42, Missing semicolon.\ncontrollers/dashboard.js: line 42, col 43, Missing semicolon.\ncontrollers/dashboard.js: line 44, col 47, Missing semicolon.\ncontrollers/dashboard.js: line 47, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 52, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 53, col 44, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 55, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 58, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 61, col 20, Missing semicolon.\ncontrollers/dashboard.js: line 17, col 26, \'io\' is not defined.\ncontrollers/dashboard.js: line 23, col 17, \'addChatMessage\' is not defined.\ncontrollers/dashboard.js: line 42, col 21, \'addChatMessage\' is not defined.\ncontrollers/dashboard.js: line 29, col 25, \'$\' is not defined.\ncontrollers/dashboard.js: line 31, col 34, \'$\' is not defined.\ncontrollers/dashboard.js: line 40, col 35, \'$\' is not defined.\ncontrollers/dashboard.js: line 44, col 21, \'generateChatWindow\' is not defined.\ncontrollers/dashboard.js: line 54, col 17, \'log\' is not defined.\ncontrollers/dashboard.js: line 57, col 17, \'log\' is not defined.\ncontrollers/dashboard.js: line 60, col 21, \'addChatTyping\' is not defined.\ncontrollers/dashboard.js: line 64, col 17, \'removeChatTyping\' is not defined.\n\n26 errors');
+    assert.ok(false, 'controllers/dashboard.js should pass jshint.\ncontrollers/dashboard.js: line 17, col 57, Missing semicolon.\ncontrollers/dashboard.js: line 24, col 36, \'index\' is defined but never used.\ncontrollers/dashboard.js: line 22, col 69, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 61, col 37, Missing semicolon.\ncontrollers/dashboard.js: line 60, col 41, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 62, col 12, Missing semicolon.\ncontrollers/dashboard.js: line 63, col 50, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 73, col 12, Missing semicolon.\ncontrollers/dashboard.js: line 81, col 18, Missing semicolon.\ncontrollers/dashboard.js: line 85, col 12, Missing semicolon.\ncontrollers/dashboard.js: line 86, col 40, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 88, col 12, Missing semicolon.\ncontrollers/dashboard.js: line 89, col 57, Missing semicolon.\ncontrollers/dashboard.js: line 90, col 48, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 92, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 94, col 45, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 104, col 62, Missing semicolon.\ncontrollers/dashboard.js: line 114, col 68, Missing semicolon.\ncontrollers/dashboard.js: line 123, col 32, Missing semicolon.\ncontrollers/dashboard.js: line 125, col 47, Missing semicolon.\ncontrollers/dashboard.js: line 131, col 48, Missing semicolon.\ncontrollers/dashboard.js: line 134, col 17, \'self\' is defined but never used.\ncontrollers/dashboard.js: line 135, col 17, \'user\' is defined but never used.\ncontrollers/dashboard.js: line 150, col 39, Missing semicolon.\ncontrollers/dashboard.js: line 151, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 159, col 51, Missing semicolon.\ncontrollers/dashboard.js: line 162, col 68, Missing semicolon.\ncontrollers/dashboard.js: line 165, col 42, Missing semicolon.\ncontrollers/dashboard.js: line 169, col 43, Missing semicolon.\ncontrollers/dashboard.js: line 171, col 47, Missing semicolon.\ncontrollers/dashboard.js: line 174, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 179, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 180, col 44, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 182, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 184, col 29, Missing semicolon.\ncontrollers/dashboard.js: line 186, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 189, col 20, Missing semicolon.\ncontrollers/dashboard.js: line 144, col 26, \'io\' is not defined.\ncontrollers/dashboard.js: line 150, col 17, \'addChatMessage\' is not defined.\ncontrollers/dashboard.js: line 169, col 21, \'addChatMessage\' is not defined.\ncontrollers/dashboard.js: line 156, col 25, \'$\' is not defined.\ncontrollers/dashboard.js: line 158, col 34, \'$\' is not defined.\ncontrollers/dashboard.js: line 167, col 35, \'$\' is not defined.\ncontrollers/dashboard.js: line 171, col 21, \'generateChatWindow\' is not defined.\ncontrollers/dashboard.js: line 181, col 17, \'log\' is not defined.\ncontrollers/dashboard.js: line 184, col 17, \'log\' is not defined.\ncontrollers/dashboard.js: line 185, col 17, \'log\' is not defined.\ncontrollers/dashboard.js: line 188, col 21, \'addChatTyping\' is not defined.\ncontrollers/dashboard.js: line 192, col 17, \'removeChatTyping\' is not defined.\n\n49 errors');
   });
 });
 define('embtest/tests/controllers/login.jshint', ['exports'], function (exports) {
@@ -157,6 +157,15 @@ define('embtest/tests/helpers/module-for-acceptance.jshint', ['exports'], functi
   QUnit.test('helpers/module-for-acceptance.js should pass jshint', function (assert) {
     assert.expect(1);
     assert.ok(true, 'helpers/module-for-acceptance.js should pass jshint.');
+  });
+});
+define('embtest/tests/helpers/msg-length.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - helpers');
+  QUnit.test('helpers/msg-length.js should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(false, 'helpers/msg-length.js should pass jshint.\nhelpers/msg-length.js: line 4, col 26, Missing semicolon.\nhelpers/msg-length.js: line 5, col 24, Missing semicolon.\n\n2 errors');
   });
 });
 define('embtest/tests/helpers/resolver', ['exports', 'embtest/resolver', 'embtest/config/environment'], function (exports, _embtestResolver, _embtestConfigEnvironment) {
@@ -271,6 +280,15 @@ define('embtest/tests/helpers/validate-properties', ['exports', 'ember', 'ember-
   function testInvalidPropertyValues(propertyName, values, context) {
     testPropertyValues(propertyName, values, false, context);
   }
+});
+define('embtest/tests/initializers/socket.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - initializers');
+  QUnit.test('initializers/socket.js should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'initializers/socket.js should pass jshint.');
+  });
 });
 define('embtest/tests/integration/components/animated-if-test', ['exports', 'ember-qunit'], function (exports, _emberQunit) {
 
@@ -601,6 +619,55 @@ define('embtest/tests/unit/controllers/login-test.jshint', ['exports'], function
   QUnit.test('unit/controllers/login-test.js should pass jshint', function (assert) {
     assert.expect(1);
     assert.ok(true, 'unit/controllers/login-test.js should pass jshint.');
+  });
+});
+define('embtest/tests/unit/helpers/msg-length-test', ['exports', 'embtest/helpers/msg-length', 'qunit'], function (exports, _embtestHelpersMsgLength, _qunit) {
+
+  (0, _qunit.module)('Unit | Helper | msg length');
+
+  // Replace this with your real tests.
+  (0, _qunit.test)('it works', function (assert) {
+    var result = (0, _embtestHelpersMsgLength.msgLength)([42]);
+    assert.ok(result);
+  });
+});
+define('embtest/tests/unit/helpers/msg-length-test.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - unit/helpers');
+  QUnit.test('unit/helpers/msg-length-test.js should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'unit/helpers/msg-length-test.js should pass jshint.');
+  });
+});
+define('embtest/tests/unit/initializers/socket-test', ['exports', 'ember', 'embtest/initializers/socket', 'qunit'], function (exports, _ember, _embtestInitializersSocket, _qunit) {
+
+  var application = undefined;
+
+  (0, _qunit.module)('Unit | Initializer | socket', {
+    beforeEach: function beforeEach() {
+      _ember['default'].run(function () {
+        application = _ember['default'].Application.create();
+        application.deferReadiness();
+      });
+    }
+  });
+
+  // Replace this with your real tests.
+  (0, _qunit.test)('it works', function (assert) {
+    _embtestInitializersSocket['default'].initialize(application);
+
+    // you would normally confirm the results of the initializer here
+    assert.ok(true);
+  });
+});
+define('embtest/tests/unit/initializers/socket-test.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - unit/initializers');
+  QUnit.test('unit/initializers/socket-test.js should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'unit/initializers/socket-test.js should pass jshint.');
   });
 });
 define('embtest/tests/unit/models/user-test', ['exports', 'ember-qunit'], function (exports, _emberQunit) {

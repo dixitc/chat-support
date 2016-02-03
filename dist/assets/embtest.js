@@ -5,7 +5,7 @@
 
 define('embtest/adapters/application', ['exports', 'ember-data', 'ember-simple-auth/mixins/data-adapter-mixin'], function (exports, _emberData, _emberSimpleAuthMixinsDataAdapterMixin) {
 	exports['default'] = _emberData['default'].RESTAdapter.extend(_emberSimpleAuthMixinsDataAdapterMixin['default'], {
-		host: 'http://localhost:3000',
+		host: 'http://172.16.1.168:3000',
 		authorizer: 'authorizer:custom'
 	});
 });
@@ -27,12 +27,11 @@ define('embtest/app', ['exports', 'ember', 'embtest/resolver', 'ember/load-initi
 });
 define('embtest/authenticators/custom', ['exports', 'ember', 'ember-simple-auth/authenticators/base'], function (exports, _ember, _emberSimpleAuthAuthenticatorsBase) {
     exports['default'] = _emberSimpleAuthAuthenticatorsBase['default'].extend({
-        tokenEndpoint: 'http://localhost:3000/login',
+        tokenEndpoint: 'http://172.16.1.168:3000/login',
         restore: function restore(data) {
             return new _ember['default'].RSVP.Promise(function (resolve, reject) {
                 if (!_ember['default'].isEmpty(data.token)) {
                     console.log('RESTORING SESSION');
-
                     //parse user id from token
                     //get user
                     //set user as current user
@@ -379,7 +378,122 @@ define('embtest/controllers/array', ['exports', 'ember'], function (exports, _em
 define('embtest/controllers/dashboard', ['exports', 'ember'], function (exports, _ember) {
 	exports['default'] = _ember['default'].Controller.extend({
 		socketIOService: _ember['default'].inject.service('socket-io'),
+		listData: _ember['default'].A([]),
+		selectedUser: null,
+		selectedMessages: _ember['default'].computed('selectedUser', function () {
+			if (this.get('selectedUser')) {
+
+				console.log(this.listData[this.listData.map(function (e) {
+					return e.who;
+				}).indexOf(this.get('selectedUser'))].msgs);
+				return this.listData[this.listData.map(function (e) {
+					return e.who;
+				}).indexOf(this.get('selectedUser'))].msgs;
+			} else {
+				return [];
+			}
+		}),
+		messagesCount: _ember['default'].computed('listData.@each.msgs', function (data) {
+			return this.get('listData').map(function (chore, index) {
+				console.log(chore);
+				return 'msglength: ' + chore.msgs.length + '!';
+			});
+		}),
+
+		init: function init() {
+			this._super.apply(this, arguments);
+			console.log('INIT SOCKET');
+			/*
+    * 2) The next step you need to do is to create your actual socketIO.
+    */
+			var socket = this.get('socketIOService').socketFor('http://172.16.1.168:3001/');
+
+			/*
+    * 3) Define any event handlers
+    */
+			socket.on('connect', function () {
+				/*
+     * There are 2 ways to send messages to the server: send and emit
+     */
+				socket.emit('join support', {
+					email: 'support@example.com'
+				});
+			}, this);
+
+			/*
+    * 4) It is also possible to set event handlers on specific events
+    */
+			socket.on('user message', this.onMessage, this);
+
+			socket.on('myCustomNamespace', function () {
+				socket.emit('anotherNamespace', 'some data');
+			}, this);
+			//   socket.emit('addsupport' ,{})
+			socket.on("new_msg", function (data) {
+				console.log('new_msg');
+			});
+			socket.on('message received', function (data) {
+
+				console.log("message received");
+			});
+			socket.on("user message", function (data) {
+				console.log('new ping');
+
+				socket.emit('userMsg received', data);
+			});
+			var self = this;
+			socket.on('new user', function (data) {
+				self.listData.pushObject(_ember['default'].Object.create({
+					who: data.username,
+					msgs: _ember['default'].A([]),
+					email: data.email,
+					connected: false
+				}));
+				console.log('new user');
+				console.log(data);
+			});
+			socket.on('joined', function (data) {
+				console.log('connected');
+			});
+			socket.on('updatechat', this.updateChat, this);
+			socket.on('support typing', function (data) {
+				console.log('support typing');
+			});
+			// Whenever the server emits 'stop typing', kill the typing message
+			socket.on('stop typing', function (data) {
+				console.log('stop typing');
+			});
+		},
+		updateChat: function updateChat(data1, data2) {
+			console.log(data1);
+			console.log(data2);
+			this.listData[this.listData.map(function (e) {
+				return e.who;
+			}).indexOf(data2)].toggleProperty('connected');
+		},
+
+		onMessage: function onMessage(data) {
+			// This is executed within the ember run loop
+			console.log(data.username);
+			this.listData[this.listData.map(function (e) {
+				return e.who;
+			}).indexOf(data.username)].msgs.pushObject(data.msg);
+			console.log(this.listData.map(function (e) {
+				return e.who;
+			}).indexOf(data.username));
+			//alert( data.msg );
+		},
 		actions: {
+			joinRoom: function joinRoom(item) {
+				console.log(item);
+				item.set('connected', true);
+				console.log(item.get('email'));
+				var socket = this.get('socketIOService').socketFor('http://172.16.1.168:3001/');
+				socket.emit('room', {
+					room_name: item.email
+				});
+				this.set('selectedUser', item.who);
+			},
 			testprotectedApi: function testprotectedApi() {
 				var self = this;
 				var user = this.store.createRecord('user', {
@@ -426,6 +540,7 @@ define('embtest/controllers/dashboard', ['exports', 'ember'], function (exports,
 					log('connected');
 				});
 				socket.on('updatechat', function (data1, data2) {
+					log(data1);
 					log(data2);
 				});
 				socket.on('support typing', function (data) {
@@ -582,6 +697,17 @@ define('embtest/controllers/login', ['exports', 'ember'], function (exports, _em
 define('embtest/controllers/object', ['exports', 'ember'], function (exports, _ember) {
   exports['default'] = _ember['default'].Controller;
 });
+define('embtest/helpers/msg-length', ['exports', 'ember'], function (exports, _ember) {
+	exports.msgLength = msgLength;
+
+	function msgLength(params /*, hash*/) {
+		console.log('params');
+		console.log(params);
+		return params[0].length;
+	}
+
+	exports['default'] = _ember['default'].Helper.helper(msgLength);
+});
 define('embtest/helpers/pluralize', ['exports', 'ember-inflector/lib/helpers/pluralize'], function (exports, _emberInflectorLibHelpersPluralize) {
   exports['default'] = _emberInflectorLibHelpersPluralize['default'];
 });
@@ -650,6 +776,18 @@ define('embtest/initializers/export-application-global', ['exports', 'ember', 'e
   exports['default'] = {
     name: 'export-application-global',
 
+    initialize: initialize
+  };
+});
+define('embtest/initializers/socket', ['exports'], function (exports) {
+  exports.initialize = initialize;
+
+  function initialize() /* application */{
+    // application.inject('route', 'foo', 'service:foo');
+  }
+
+  exports['default'] = {
+    name: 'socket',
     initialize: initialize
   };
 });
@@ -6225,6 +6363,405 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
         templates: []
       };
     })();
+    var child2 = (function () {
+      var child0 = (function () {
+        return {
+          meta: {
+            "fragmentReason": false,
+            "revision": "Ember@2.3.0",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 309,
+                "column": 0
+              },
+              "end": {
+                "line": 311,
+                "column": 4
+              }
+            },
+            "moduleName": "embtest/templates/dashboard.hbs"
+          },
+          isEmpty: false,
+          arity: 1,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createTextNode("    ");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createComment("");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createTextNode("\n");
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+            var morphs = new Array(1);
+            morphs[0] = dom.createMorphAt(fragment, 1, 1, contextualElement);
+            return morphs;
+          },
+          statements: [["content", "msg", ["loc", [null, [310, 4], [310, 11]]]]],
+          locals: ["msg"],
+          templates: []
+        };
+      })();
+      return {
+        meta: {
+          "fragmentReason": false,
+          "revision": "Ember@2.3.0",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 308,
+              "column": 0
+            },
+            "end": {
+              "line": 312,
+              "column": 4
+            }
+          },
+          "moduleName": "embtest/templates/dashboard.hbs"
+        },
+        isEmpty: false,
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(fragment, 0, 0, contextualElement);
+          dom.insertBoundary(fragment, 0);
+          dom.insertBoundary(fragment, null);
+          return morphs;
+        },
+        statements: [["block", "each", [["get", "selectedMessages", ["loc", [null, [309, 8], [309, 24]]]]], [], 0, null, ["loc", [null, [309, 0], [311, 13]]]]],
+        locals: [],
+        templates: [child0]
+      };
+    })();
+    var child3 = (function () {
+      return {
+        meta: {
+          "fragmentReason": false,
+          "revision": "Ember@2.3.0",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 312,
+              "column": 4
+            },
+            "end": {
+              "line": 314,
+              "column": 4
+            }
+          },
+          "moduleName": "embtest/templates/dashboard.hbs"
+        },
+        isEmpty: false,
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createTextNode("    No messages yet.\n");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes() {
+          return [];
+        },
+        statements: [],
+        locals: [],
+        templates: []
+      };
+    })();
+    var child4 = (function () {
+      var child0 = (function () {
+        var child0 = (function () {
+          var child0 = (function () {
+            var child0 = (function () {
+              return {
+                meta: {
+                  "fragmentReason": false,
+                  "revision": "Ember@2.3.0",
+                  "loc": {
+                    "source": null,
+                    "start": {
+                      "line": 323,
+                      "column": 10
+                    },
+                    "end": {
+                      "line": 327,
+                      "column": 12
+                    }
+                  },
+                  "moduleName": "embtest/templates/dashboard.hbs"
+                },
+                isEmpty: false,
+                arity: 0,
+                cachedFragment: null,
+                hasRendered: false,
+                buildFragment: function buildFragment(dom) {
+                  var el0 = dom.createDocumentFragment();
+                  var el1 = dom.createTextNode("          ");
+                  dom.appendChild(el0, el1);
+                  var el1 = dom.createElement("div");
+                  dom.setAttribute(el1, "class", "countDiv");
+                  var el2 = dom.createTextNode("\n          ");
+                  dom.appendChild(el1, el2);
+                  var el2 = dom.createComment("");
+                  dom.appendChild(el1, el2);
+                  var el2 = dom.createTextNode("\n          ");
+                  dom.appendChild(el1, el2);
+                  dom.appendChild(el0, el1);
+                  var el1 = dom.createTextNode("\n");
+                  dom.appendChild(el0, el1);
+                  return el0;
+                },
+                buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+                  var morphs = new Array(1);
+                  morphs[0] = dom.createMorphAt(dom.childAt(fragment, [1]), 1, 1);
+                  return morphs;
+                },
+                statements: [["content", "item.msgs.length", ["loc", [null, [325, 10], [325, 30]]]]],
+                locals: [],
+                templates: []
+              };
+            })();
+            var child1 = (function () {
+              return {
+                meta: {
+                  "fragmentReason": false,
+                  "revision": "Ember@2.3.0",
+                  "loc": {
+                    "source": null,
+                    "start": {
+                      "line": 327,
+                      "column": 12
+                    },
+                    "end": {
+                      "line": 331,
+                      "column": 12
+                    }
+                  },
+                  "moduleName": "embtest/templates/dashboard.hbs"
+                },
+                isEmpty: false,
+                arity: 0,
+                cachedFragment: null,
+                hasRendered: false,
+                buildFragment: function buildFragment(dom) {
+                  var el0 = dom.createDocumentFragment();
+                  var el1 = dom.createTextNode("            ");
+                  dom.appendChild(el0, el1);
+                  var el1 = dom.createElement("p");
+                  var el2 = dom.createTextNode("\n            Not Connected\n            ");
+                  dom.appendChild(el1, el2);
+                  dom.appendChild(el0, el1);
+                  var el1 = dom.createTextNode("\n");
+                  dom.appendChild(el0, el1);
+                  return el0;
+                },
+                buildRenderNodes: function buildRenderNodes() {
+                  return [];
+                },
+                statements: [],
+                locals: [],
+                templates: []
+              };
+            })();
+            return {
+              meta: {
+                "fragmentReason": false,
+                "revision": "Ember@2.3.0",
+                "loc": {
+                  "source": null,
+                  "start": {
+                    "line": 318,
+                    "column": 6
+                  },
+                  "end": {
+                    "line": 333,
+                    "column": 6
+                  }
+                },
+                "moduleName": "embtest/templates/dashboard.hbs"
+              },
+              isEmpty: false,
+              arity: 0,
+              cachedFragment: null,
+              hasRendered: false,
+              buildFragment: function buildFragment(dom) {
+                var el0 = dom.createDocumentFragment();
+                var el1 = dom.createTextNode("     \n        ");
+                dom.appendChild(el0, el1);
+                var el1 = dom.createElement("div");
+                dom.setAttribute(el1, "class", "md-list-item-text");
+                var el2 = dom.createTextNode("\n          ");
+                dom.appendChild(el1, el2);
+                var el2 = dom.createElement("h3");
+                var el3 = dom.createComment("");
+                dom.appendChild(el2, el3);
+                dom.appendChild(el1, el2);
+                var el2 = dom.createTextNode("\n          ");
+                dom.appendChild(el1, el2);
+                var el2 = dom.createElement("h4");
+                var el3 = dom.createComment("");
+                dom.appendChild(el2, el3);
+                dom.appendChild(el1, el2);
+                var el2 = dom.createTextNode("\n");
+                dom.appendChild(el1, el2);
+                var el2 = dom.createComment("");
+                dom.appendChild(el1, el2);
+                var el2 = dom.createTextNode("        ");
+                dom.appendChild(el1, el2);
+                dom.appendChild(el0, el1);
+                var el1 = dom.createTextNode("\n");
+                dom.appendChild(el0, el1);
+                return el0;
+              },
+              buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+                var element0 = dom.childAt(fragment, [1]);
+                var morphs = new Array(3);
+                morphs[0] = dom.createMorphAt(dom.childAt(element0, [1]), 0, 0);
+                morphs[1] = dom.createMorphAt(dom.childAt(element0, [3]), 0, 0);
+                morphs[2] = dom.createMorphAt(element0, 5, 5);
+                return morphs;
+              },
+              statements: [["content", "item.who", ["loc", [null, [321, 14], [321, 26]]]], ["content", "item.email", ["loc", [null, [322, 14], [322, 28]]]], ["block", "if", [["get", "item.connected", ["loc", [null, [323, 16], [323, 30]]]]], [], 0, 1, ["loc", [null, [323, 10], [331, 19]]]]],
+              locals: [],
+              templates: [child0, child1]
+            };
+          })();
+          return {
+            meta: {
+              "fragmentReason": false,
+              "revision": "Ember@2.3.0",
+              "loc": {
+                "source": null,
+                "start": {
+                  "line": 317,
+                  "column": 4
+                },
+                "end": {
+                  "line": 335,
+                  "column": 4
+                }
+              },
+              "moduleName": "embtest/templates/dashboard.hbs"
+            },
+            isEmpty: false,
+            arity: 1,
+            cachedFragment: null,
+            hasRendered: false,
+            buildFragment: function buildFragment(dom) {
+              var el0 = dom.createDocumentFragment();
+              var el1 = dom.createComment("");
+              dom.appendChild(el0, el1);
+              var el1 = dom.createTextNode("       ");
+              dom.appendChild(el0, el1);
+              var el1 = dom.createComment("");
+              dom.appendChild(el0, el1);
+              var el1 = dom.createTextNode(" \n");
+              dom.appendChild(el0, el1);
+              return el0;
+            },
+            buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+              var morphs = new Array(2);
+              morphs[0] = dom.createMorphAt(fragment, 0, 0, contextualElement);
+              morphs[1] = dom.createMorphAt(fragment, 2, 2, contextualElement);
+              dom.insertBoundary(fragment, 0);
+              return morphs;
+            },
+            statements: [["block", "paper-item", [], ["class", "md-3-line", "action", ["subexpr", "action", ["joinRoom", ["get", "item", ["loc", [null, [318, 64], [318, 68]]]]], [], ["loc", [null, [318, 45], [318, 69]]]]], 0, null, ["loc", [null, [318, 6], [333, 21]]]], ["content", "paper-divider", ["loc", [null, [334, 7], [334, 24]]]]],
+            locals: ["item"],
+            templates: [child0]
+          };
+        })();
+        return {
+          meta: {
+            "fragmentReason": false,
+            "revision": "Ember@2.3.0",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 316,
+                "column": 2
+              },
+              "end": {
+                "line": 336,
+                "column": 2
+              }
+            },
+            "moduleName": "embtest/templates/dashboard.hbs"
+          },
+          isEmpty: false,
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createComment("");
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+            var morphs = new Array(1);
+            morphs[0] = dom.createMorphAt(fragment, 0, 0, contextualElement);
+            dom.insertBoundary(fragment, 0);
+            dom.insertBoundary(fragment, null);
+            return morphs;
+          },
+          statements: [["block", "each", [["get", "listData", ["loc", [null, [317, 12], [317, 20]]]]], [], 0, null, ["loc", [null, [317, 4], [335, 13]]]]],
+          locals: [],
+          templates: [child0]
+        };
+      })();
+      return {
+        meta: {
+          "fragmentReason": false,
+          "revision": "Ember@2.3.0",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 315,
+              "column": 0
+            },
+            "end": {
+              "line": 337,
+              "column": 0
+            }
+          },
+          "moduleName": "embtest/templates/dashboard.hbs"
+        },
+        isEmpty: false,
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(fragment, 0, 0, contextualElement);
+          dom.insertBoundary(fragment, 0);
+          dom.insertBoundary(fragment, null);
+          return morphs;
+        },
+        statements: [["block", "paper-list", [], [], 0, null, ["loc", [null, [316, 2], [336, 17]]]]],
+        locals: [],
+        templates: [child0]
+      };
+    })();
     return {
       meta: {
         "fragmentReason": {
@@ -6239,7 +6776,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             "column": 0
           },
           "end": {
-            "line": 325,
+            "line": 347,
             "column": 13
           }
         },
@@ -6258,7 +6795,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
         var el1 = dom.createTextNode("\n        ");
         dom.appendChild(el0, el1);
         var el1 = dom.createElement("style");
-        var el2 = dom.createTextNode("\n\n  body {\n    background: antiquewhite;\n        background: url('chat-background.jpg');\n        background-size: contain;\n    font-family: 'Roboto', sans-serif;\n  }\n  .bubble {\n    position: relative;\n  /*  width: 250px;*/\n   \n    padding: 0px;\n    background: #FCF3D2;\n    -webkit-border-radius: 5px;\n    -moz-border-radius: 5px;\n    border-radius: 5px;\n    -webkit-box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);\n    -moz-box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);\n    box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);\n}\n\n\n\n.pointer {\n        content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n        left: 250px;\n    top: 0px;\n    border-width: 0px 0px 19px 17px;\n    border-color: transparent #e5ffcc;\n}\n\n/*rgb(216, 252, 199)*/\n.rightbubble {\n       position: relative;\n    /* width: auto; */\n    background: #fff;\n    border: #bbb solid 0;\n    -webkit-border-radius: 5px;\n    -moz-border-radius: 5px;\n    border-radius: 5px 0px 5px 5px;\n    margin: 0 auto;\n    z-index: 555;\n    border-color: rgb(0, 0, 0);\n      -webkit-box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);\n    -moz-box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);\n    box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);\n    background: #e5ffcc;\n    margin-bottom: 5px;\n    padding: 7px;\n    line-height: 18px;\n    font-size: 14px;\n    font-weight: 300;\n    min-width: 50px;\n    display: inline-block;\n        padding-right: 35px;\n        padding-top: 5px;\n    float: initial;\n}\n\n\n  .rightbubble:after {\n   content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n    left: 100%;\n    top: 0px;\n       border-width: 0px 0px 9px 6px;\n        border-color: transparent #e5ffcc;\n}\n\n.rightbubble:before {\n    content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n    left: 100%;\n    top: 0px;\n      border-width: 0px 0px 11px 6px;\n    border-color: transparent rgba(169, 173, 165, 0.62);\n}\n\n.leftbubble {\n    background: #fff;\n}\n\n .leftbubble:after {\n    content: \"\";\n    position: absolute;\n    top: 0px;\n    left: 0%;\n    border-style: solid;\n    border-width: -6px 2px -3px -7px;\n    display: block;\n    width: 0;\n    z-index: 1;\n    content: ' ';\n    position: absolute;\n    width: 0;\n    height: 0;\n    left: -8px;\n    right: auto;\n    top: 0px;\n    bottom: auto;\n    border: 8px solid;\n    \n    border-color: white transparent transparent transparent;\n}\n\n .leftbubble:before {\n\n    border-color: transparent;\n   \n}\n\n.imagebubble {\n        padding-right: 5px;\n    padding-bottom: 2px;\n    padding-top: 5px;\n}\n\n\n.inputbubble {\n    position: absolute;\n    bottom: 10px;\n     left: 50px; \n    width: 250px;\n    margin: auto;\n    height: 47px;\n    padding: 0px;\n    z-index: 1000;\n    background: #FFFFFF;\n    -webkit-border-radius: 5px;\n    -moz-border-radius: 5px;\n    border-radius: 5px 0px 5px 5px;\n    -webkit-box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n    -moz-box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n    box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n}\n\n  .inputbubble:after {\n      content: \"\";\n    position: absolute;\n    top: 8px;\n    right: -15;\n    border-style: solid;\n    border-width: 15px 0 15px 15px;\n    border-color: transparent #FFFFFF;\n    display: block;\n    width: 0;\n    z-index: 1;\n    content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n    left: 250px;\n    top: 0px;\n      border-width: 0px 0px 9px 7px;\n    border-color: transparent #fff;\n}\n\n\n.inputMessage {\n        border: none;\n    height: 100%;\n    width: 80%;\n    padding: 10px;\n    outline: none;\n    border-radius: 5px;\n}\n\n.messageLi {\n    text-align: end;\n    margin-top: 10px;\n}\n\n.lileft {\n    text-align: start;\n}\n\n  .fileDiv {\n    display: none;\n        height: 100px;\n    width: 100px;\n    position: absolute;\n    background: green;\n    border-radius: 50%;\n    box-shadow: rgba(97, 97, 97, 0.227451) 2px 2px 7px 4px;\n    top: 60%;\n    left: 200px;\n  }\n\n.logText {\n    background: #d4eaf4;\n    padding: 7px;\n    font-size: 10px;\n      box-shadow: rgba(97, 97, 97, 0.227451) 1px 1px 0px 0px;\n    border-radius: 4px;\n    margin-bottom: 20px;\n}\n\n.statusImg {\n    position: absolute;\n    /* background: red; */\n    height: 11px;\n    /* width: 13px; */\n    bottom: 3px;\n    right: 5px;\n}\n\n\n.typing {\n    padding-right: 5px;\n}\n\n.log {\n    margin: 25px;\n}\n.chatImage {\n    height: 150px;\n}\n\n.chatImageEnlarge {\n        position: fixed;\n    height: auto;\n    max-width: 90%;\n    left: 5%;\n    max-height: 100%;\n    top:5%;\n}\n.spinner {\n\n  width: 50px;\n  height: 20px;\n  text-align: center;\n  font-size: 10px;\n}\n\n.spinner > div {\n  background-color: #333;\n  height: 100%;\n  width: 3px;\n  display: inline-block;\n  margin: 3px;\n  \n  -webkit-animation: sk-stretchdelay 1.2s infinite ease-in-out;\n  animation: sk-stretchdelay 1.2s infinite ease-in-out;\n}\n\n.spinner .rect2 {\n  -webkit-animation-delay: -1.1s;\n  animation-delay: -1.1s;\n}\n\n.spinner .rect3 {\n  -webkit-animation-delay: -1.0s;\n  animation-delay: -1.0s;\n}\n\n.spinner .rect4 {\n  -webkit-animation-delay: -0.9s;\n  animation-delay: -0.9s;\n}\n\n.spinner .rect5 {\n  -webkit-animation-delay: -0.8s;\n  animation-delay: -0.8s;\n}\n\n@-webkit-keyframes sk-stretchdelay {\n  0%, 40%, 100% { -webkit-transform: scaleY(0.4) }  \n  20% { -webkit-transform: scaleY(1.0) }\n}\n\n@keyframes sk-stretchdelay {\n  0%, 40%, 100% { \n    transform: scaleY(0.4);\n    -webkit-transform: scaleY(0.4);\n  }  20% { \n    transform: scaleY(1.0);\n    -webkit-transform: scaleY(1.0);\n  }\n");
+        var el2 = dom.createTextNode("\n\n  body {\n    background: antiquewhite;\n        \n        background-size: contain;\n    font-family: 'Roboto', sans-serif;\n  }\n  .bubble {\n    position: relative;\n  /*  width: 250px;*/\n   \n    padding: 0px;\n    background: #FCF3D2;\n    -webkit-border-radius: 5px;\n    -moz-border-radius: 5px;\n    border-radius: 5px;\n    -webkit-box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);\n    -moz-box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);\n    box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);\n}\n\n\n\n.pointer {\n        content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n        left: 250px;\n    top: 0px;\n    border-width: 0px 0px 19px 17px;\n    border-color: transparent #e5ffcc;\n}\n\n/*rgb(216, 252, 199)*/\n.rightbubble {\n       position: relative;\n    /* width: auto; */\n    background: #fff;\n    border: #bbb solid 0;\n    -webkit-border-radius: 5px;\n    -moz-border-radius: 5px;\n    border-radius: 5px 0px 5px 5px;\n    margin: 0 auto;\n    z-index: 555;\n    border-color: rgb(0, 0, 0);\n      -webkit-box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);\n    -moz-box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);\n    box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);\n    background: #e5ffcc;\n    margin-bottom: 5px;\n    padding: 7px;\n    line-height: 18px;\n    font-size: 14px;\n    font-weight: 300;\n    min-width: 50px;\n    display: inline-block;\n        padding-right: 35px;\n        padding-top: 5px;\n    float: initial;\n}\n\n\n  .rightbubble:after {\n   content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n    left: 100%;\n    top: 0px;\n       border-width: 0px 0px 9px 6px;\n        border-color: transparent #e5ffcc;\n}\n\n.rightbubble:before {\n    content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n    left: 100%;\n    top: 0px;\n      border-width: 0px 0px 11px 6px;\n    border-color: transparent rgba(169, 173, 165, 0.62);\n}\n\n.leftbubble {\n    background: #fff;\n}\n\n .leftbubble:after {\n    content: \"\";\n    position: absolute;\n    top: 0px;\n    left: 0%;\n    border-style: solid;\n    border-width: -6px 2px -3px -7px;\n    display: block;\n    width: 0;\n    z-index: 1;\n    content: ' ';\n    position: absolute;\n    width: 0;\n    height: 0;\n    left: -8px;\n    right: auto;\n    top: 0px;\n    bottom: auto;\n    border: 8px solid;\n    \n    border-color: white transparent transparent transparent;\n}\n\n .leftbubble:before {\n\n    border-color: transparent;\n   \n}\n\n.imagebubble {\n        padding-right: 5px;\n    padding-bottom: 2px;\n    padding-top: 5px;\n}\n\n\n.inputbubble {\n    position: absolute;\n    bottom: 10px;\n     left: 50px; \n    width: 250px;\n    margin: auto;\n    height: 47px;\n    padding: 0px;\n    z-index: 1000;\n    background: #FFFFFF;\n    -webkit-border-radius: 5px;\n    -moz-border-radius: 5px;\n    border-radius: 5px 0px 5px 5px;\n    -webkit-box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n    -moz-box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n    box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n}\n\n  .inputbubble:after {\n      content: \"\";\n    position: absolute;\n    top: 8px;\n    right: -15;\n    border-style: solid;\n    border-width: 15px 0 15px 15px;\n    border-color: transparent #FFFFFF;\n    display: block;\n    width: 0;\n    z-index: 1;\n    content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n    left: 250px;\n    top: 0px;\n      border-width: 0px 0px 9px 7px;\n    border-color: transparent #fff;\n}\n\n\n.inputMessage {\n        border: none;\n    height: 100%;\n    width: 80%;\n    padding: 10px;\n    outline: none;\n    border-radius: 5px;\n}\n\n.messageLi {\n    text-align: end;\n    margin-top: 10px;\n}\n\n.lileft {\n    text-align: start;\n}\n\n  .fileDiv {\n    display: none;\n        height: 100px;\n    width: 100px;\n    position: absolute;\n    background: green;\n    border-radius: 50%;\n    box-shadow: rgba(97, 97, 97, 0.227451) 2px 2px 7px 4px;\n    top: 60%;\n    left: 200px;\n  }\n\n.logText {\n    background: #d4eaf4;\n    padding: 7px;\n    font-size: 10px;\n      box-shadow: rgba(97, 97, 97, 0.227451) 1px 1px 0px 0px;\n    border-radius: 4px;\n    margin-bottom: 20px;\n}\n\n.statusImg {\n    position: absolute;\n    /* background: red; */\n    height: 11px;\n    /* width: 13px; */\n    bottom: 3px;\n    right: 5px;\n}\n\n\n.typing {\n    padding-right: 5px;\n}\n\n.log {\n    margin: 25px;\n}\n.chatImage {\n    height: 150px;\n}\n\n.chatImageEnlarge {\n        position: fixed;\n    height: auto;\n    max-width: 90%;\n    left: 5%;\n    max-height: 100%;\n    top:5%;\n}\n.spinner {\n\n  width: 50px;\n  height: 20px;\n  text-align: center;\n  font-size: 10px;\n}\n\n.spinner > div {\n  background-color: #333;\n  height: 100%;\n  width: 3px;\n  display: inline-block;\n  margin: 3px;\n  \n  -webkit-animation: sk-stretchdelay 1.2s infinite ease-in-out;\n  animation: sk-stretchdelay 1.2s infinite ease-in-out;\n}\n\n.spinner .rect2 {\n  -webkit-animation-delay: -1.1s;\n  animation-delay: -1.1s;\n}\n\n.spinner .rect3 {\n  -webkit-animation-delay: -1.0s;\n  animation-delay: -1.0s;\n}\n\n.spinner .rect4 {\n  -webkit-animation-delay: -0.9s;\n  animation-delay: -0.9s;\n}\n\n.spinner .rect5 {\n  -webkit-animation-delay: -0.8s;\n  animation-delay: -0.8s;\n}\n\n@-webkit-keyframes sk-stretchdelay {\n  0%, 40%, 100% { -webkit-transform: scaleY(0.4) }  \n  20% { -webkit-transform: scaleY(1.0) }\n}\n\n@keyframes sk-stretchdelay {\n  0%, 40%, 100% { \n    transform: scaleY(0.4);\n    -webkit-transform: scaleY(0.4);\n  }  20% { \n    transform: scaleY(1.0);\n    -webkit-transform: scaleY(1.0);\n  }\n");
         dom.appendChild(el1, el2);
         dom.appendChild(el0, el1);
         var el1 = dom.createTextNode("\n");
@@ -6273,7 +6810,13 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
         dom.appendChild(el0, el1);
         var el1 = dom.createComment("");
         dom.appendChild(el0, el1);
-        var el1 = dom.createTextNode("\n\n      ");
+        var el1 = dom.createTextNode("\n");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("      ");
         dom.appendChild(el0, el1);
         var el1 = dom.createElement("ul");
         dom.setAttribute(el1, "class", "pages");
@@ -6298,49 +6841,23 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
         var el3 = dom.createTextNode("\n    \n            ");
         dom.appendChild(el2, el3);
         dom.appendChild(el1, el2);
-        var el2 = dom.createTextNode("\n            ");
-        dom.appendChild(el1, el2);
-        var el2 = dom.createElement("li");
-        dom.setAttribute(el2, "class", "login page");
-        var el3 = dom.createTextNode("\n                ");
-        dom.appendChild(el2, el3);
-        var el3 = dom.createElement("div");
-        dom.setAttribute(el3, "class", "form");
-        var el4 = dom.createTextNode("\n                    ");
-        dom.appendChild(el3, el4);
-        var el4 = dom.createElement("h3");
-        dom.setAttribute(el4, "class", "title");
-        var el5 = dom.createTextNode("\n                        What's your nickname?\n                    ");
-        dom.appendChild(el4, el5);
-        dom.appendChild(el3, el4);
-        var el4 = dom.createTextNode("\n                    ");
-        dom.appendChild(el3, el4);
-        var el4 = dom.createElement("input");
-        dom.setAttribute(el4, "class", "usernameInput");
-        dom.setAttribute(el4, "type", "text");
-        dom.setAttribute(el4, "maxlength", "14");
-        dom.appendChild(el3, el4);
-        var el4 = dom.createTextNode("\n                ");
-        dom.appendChild(el3, el4);
-        dom.appendChild(el2, el3);
-        var el3 = dom.createTextNode("\n            ");
-        dom.appendChild(el2, el3);
-        dom.appendChild(el1, el2);
-        var el2 = dom.createTextNode("\n        ");
+        var el2 = dom.createTextNode("\n           \n        ");
         dom.appendChild(el1, el2);
         dom.appendChild(el0, el1);
         return el0;
       },
       buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-        var morphs = new Array(3);
+        var morphs = new Array(5);
         morphs[0] = dom.createMorphAt(fragment, 4, 4, contextualElement);
         morphs[1] = dom.createMorphAt(fragment, 6, 6, contextualElement);
         morphs[2] = dom.createMorphAt(fragment, 8, 8, contextualElement);
+        morphs[3] = dom.createMorphAt(fragment, 10, 10, contextualElement);
+        morphs[4] = dom.createMorphAt(fragment, 11, 11, contextualElement);
         return morphs;
       },
-      statements: [["block", "paper-button", [], ["class", "login-options", "raised", true, "primary", true, "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [305, 70], [305, 75]]]]], [], []], "action", ["subexpr", "action", ["testprotectedApi"], [], ["loc", [null, [305, 83], [305, 110]]]]], 0, null, ["loc", [null, [305, 0], [305, 147]]]], ["block", "paper-button", [], ["class", "login-options", "raised", true, "primary", true, "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [306, 70], [306, 75]]]]], [], []], "action", ["subexpr", "action", ["socketTest"], [], ["loc", [null, [306, 83], [306, 104]]]]], 1, null, ["loc", [null, [306, 0], [306, 145]]]], ["content", "outlet", ["loc", [null, [307, 0], [307, 10]]]]],
+      statements: [["block", "paper-button", [], ["class", "login-options", "raised", true, "primary", true, "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [305, 70], [305, 75]]]]], [], []], "action", ["subexpr", "action", ["testprotectedApi"], [], ["loc", [null, [305, 83], [305, 110]]]]], 0, null, ["loc", [null, [305, 0], [305, 147]]]], ["block", "paper-button", [], ["class", "login-options", "raised", true, "primary", true, "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [306, 70], [306, 75]]]]], [], []], "action", ["subexpr", "action", ["socketTest"], [], ["loc", [null, [306, 83], [306, 104]]]]], 1, null, ["loc", [null, [306, 0], [306, 145]]]], ["content", "outlet", ["loc", [null, [307, 0], [307, 10]]]], ["block", "if", [["get", "selectedMessages", ["loc", [null, [308, 6], [308, 22]]]]], [], 2, 3, ["loc", [null, [308, 0], [314, 11]]]], ["block", "paper-content", [], ["class", "md-whiteframe-z1 list-demo name-list"], 4, null, ["loc", [null, [315, 0], [337, 18]]]]],
       locals: [],
-      templates: [child0, child1]
+      templates: [child0, child1, child2, child3, child4]
     };
   })());
 });
@@ -6997,7 +7514,7 @@ catch(err) {
 
 /* jshint ignore:start */
 if (!runningTests) {
-  require("embtest/app")["default"].create({"name":"embtest","version":"0.0.0+a93e2f93"});
+  require("embtest/app")["default"].create({"name":"embtest","version":"0.0.0+7aabd643"});
 }
 /* jshint ignore:end */
 //# sourceMappingURL=embtest.map

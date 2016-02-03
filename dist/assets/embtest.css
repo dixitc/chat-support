@@ -8512,3 +8512,22 @@ a {
 
 .light {
   background: transparent; }
+
+.name-list {
+  width: 50%;
+  max-width: 300px;
+  margin: 20px;
+  min-width: 250px; }
+
+.connected {
+  background: #CCFFC0; }
+
+.countDiv {
+  background: rgba(63, 81, 181, 0.27);
+  color: #2837FF;
+  height: 16px;
+  width: 22px;
+  line-height: 16px;
+  text-align: center;
+  font-size: 10px;
+  border-radius: 10px; }

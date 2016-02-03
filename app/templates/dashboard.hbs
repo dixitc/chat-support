@@ -3,7 +3,7 @@
 
   body {
     background: antiquewhite;
-        background: url('chat-background.jpg');
+        
         background-size: contain;
     font-family: 'Roboto', sans-serif;
   }
@@ -305,7 +305,36 @@
 {{#paper-button class="login-options" raised=true primary=true signup=login action=(action "testprotectedApi")}}test protected api{{/paper-button}}
 {{#paper-button class="login-options" raised=true primary=true signup=login action=(action "socketTest")}}test socket connection{{/paper-button}}
 {{outlet}}
-
+{{#if selectedMessages}}
+{{#each selectedMessages as |msg|}}
+    {{msg}}
+    {{/each}}
+    {{else}}
+    No messages yet.
+    {{/if}}
+{{#paper-content class="md-whiteframe-z1 list-demo name-list"}}
+  {{#paper-list}}
+    {{#each listData as |item|}}
+      {{#paper-item class="md-3-line" action=(action "joinRoom" item)}}
+     
+        <div class="md-list-item-text">
+          <h3>{{item.who}}</h3>
+          <h4>{{item.email}}</h4>
+          {{#if item.connected}}
+          <div class="countDiv">
+          {{item.msgs.length}}
+          </div>
+            {{else}}
+            <p>
+            Not Connected
+            </p>
+            {{/if}}
+        </div>
+      {{/paper-item}}
+       {{paper-divider}} 
+    {{/each}}
+  {{/paper-list}}
+{{/paper-content}}
       <ul class="pages">
             <li class="chat page">
                 <div class="chatArea">
@@ -314,12 +343,5 @@
                 </div>
     
             </li>
-            <li class="login page">
-                <div class="form">
-                    <h3 class="title">
-                        What's your nickname?
-                    </h3>
-                    <input class="usernameInput" type="text" maxlength="14" />
-                </div>
-            </li>
+           
         </ul>
