@@ -5,7 +5,7 @@
 
 define('embtest/adapters/application', ['exports', 'ember-data', 'ember-simple-auth/mixins/data-adapter-mixin'], function (exports, _emberData, _emberSimpleAuthMixinsDataAdapterMixin) {
 	exports['default'] = _emberData['default'].RESTAdapter.extend(_emberSimpleAuthMixinsDataAdapterMixin['default'], {
-		host: 'http://172.16.1.168:3000',
+		host: 'http://localhost:3000',
 		authorizer: 'authorizer:custom'
 	});
 });
@@ -27,7 +27,7 @@ define('embtest/app', ['exports', 'ember', 'embtest/resolver', 'ember/load-initi
 });
 define('embtest/authenticators/custom', ['exports', 'ember', 'ember-simple-auth/authenticators/base'], function (exports, _ember, _emberSimpleAuthAuthenticatorsBase) {
     exports['default'] = _emberSimpleAuthAuthenticatorsBase['default'].extend({
-        tokenEndpoint: 'http://172.16.1.168:3000/login',
+        tokenEndpoint: 'http://localhost:3000/login',
         restore: function restore(data) {
             return new _ember['default'].RSVP.Promise(function (resolve, reject) {
                 if (!_ember['default'].isEmpty(data.token)) {
@@ -406,7 +406,7 @@ define('embtest/controllers/dashboard', ['exports', 'ember'], function (exports,
 			/*
     * 2) The next step you need to do is to create your actual socketIO.
     */
-			var socket = this.get('socketIOService').socketFor('http://172.16.1.168:3001/');
+			var socket = this.get('socketIOService').socketFor('http://localhost:3001/');
 
 			/*
     * 3) Define any event handlers
@@ -488,7 +488,7 @@ define('embtest/controllers/dashboard', ['exports', 'ember'], function (exports,
 				console.log(item);
 				item.set('connected', true);
 				console.log(item.get('email'));
-				var socket = this.get('socketIOService').socketFor('http://172.16.1.168:3001/');
+				var socket = this.get('socketIOService').socketFor('http://localhost:3001/');
 				socket.emit('room', {
 					room_name: item.email
 				});
@@ -503,7 +503,7 @@ define('embtest/controllers/dashboard', ['exports', 'ember'], function (exports,
 				});
 			},
 			socketTest: function socketTest() {
-				var socket = io('http://172.16.1.168:3001');
+				var socket = io('http://localhost:3001');
 				socket.emit('join support', {
 					email: 'support@example.com'
 				});
@@ -6299,11 +6299,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           "loc": {
             "source": null,
             "start": {
-              "line": 305,
+              "line": 312,
               "column": 0
             },
             "end": {
-              "line": 305,
+              "line": 312,
               "column": 130
             }
           },
@@ -6335,11 +6335,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           "loc": {
             "source": null,
             "start": {
-              "line": 306,
+              "line": 313,
               "column": 0
             },
             "end": {
-              "line": 306,
+              "line": 313,
               "column": 128
             }
           },
@@ -6365,6 +6365,67 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
     })();
     var child2 = (function () {
       var child0 = (function () {
+        var child0 = (function () {
+          return {
+            meta: {
+              "fragmentReason": false,
+              "revision": "Ember@2.3.0",
+              "loc": {
+                "source": null,
+                "start": {
+                  "line": 323,
+                  "column": 0
+                },
+                "end": {
+                  "line": 332,
+                  "column": 4
+                }
+              },
+              "moduleName": "embtest/templates/dashboard.hbs"
+            },
+            isEmpty: false,
+            arity: 1,
+            cachedFragment: null,
+            hasRendered: false,
+            buildFragment: function buildFragment(dom) {
+              var el0 = dom.createDocumentFragment();
+              var el1 = dom.createElement("li");
+              dom.setAttribute(el1, "class", "messageLi");
+              var el2 = dom.createTextNode("'\n	");
+              dom.appendChild(el1, el2);
+              var el2 = dom.createElement("div");
+              dom.setAttribute(el2, "class", "rightbubble message");
+              var el3 = dom.createTextNode("\n		");
+              dom.appendChild(el2, el3);
+              var el3 = dom.createElement("span");
+              dom.setAttribute(el3, "class", "messageBody");
+              var el4 = dom.createTextNode("\n			\n	    	");
+              dom.appendChild(el3, el4);
+              var el4 = dom.createComment("");
+              dom.appendChild(el3, el4);
+              var el4 = dom.createTextNode("\n		");
+              dom.appendChild(el3, el4);
+              dom.appendChild(el2, el3);
+              var el3 = dom.createTextNode("\n    ");
+              dom.appendChild(el2, el3);
+              dom.appendChild(el1, el2);
+              var el2 = dom.createTextNode("\n    ");
+              dom.appendChild(el1, el2);
+              dom.appendChild(el0, el1);
+              var el1 = dom.createTextNode("\n");
+              dom.appendChild(el0, el1);
+              return el0;
+            },
+            buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+              var morphs = new Array(1);
+              morphs[0] = dom.createMorphAt(dom.childAt(fragment, [0, 1, 1]), 1, 1);
+              return morphs;
+            },
+            statements: [["content", "msg", ["loc", [null, [328, 6], [328, 13]]]]],
+            locals: ["msg"],
+            templates: []
+          };
+        })();
         return {
           meta: {
             "fragmentReason": false,
@@ -6372,25 +6433,53 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             "loc": {
               "source": null,
               "start": {
-                "line": 309,
+                "line": 317,
                 "column": 0
               },
               "end": {
-                "line": 311,
+                "line": 339,
                 "column": 4
               }
             },
             "moduleName": "embtest/templates/dashboard.hbs"
           },
           isEmpty: false,
-          arity: 1,
+          arity: 0,
           cachedFragment: null,
           hasRendered: false,
           buildFragment: function buildFragment(dom) {
             var el0 = dom.createDocumentFragment();
-            var el1 = dom.createTextNode("    ");
+            var el1 = dom.createTextNode("\n      ");
             dom.appendChild(el0, el1);
-            var el1 = dom.createComment("");
+            var el1 = dom.createElement("ul");
+            dom.setAttribute(el1, "class", "pages");
+            var el2 = dom.createTextNode("\n            ");
+            dom.appendChild(el1, el2);
+            var el2 = dom.createElement("li");
+            dom.setAttribute(el2, "class", "chat page");
+            var el3 = dom.createTextNode("\n                ");
+            dom.appendChild(el2, el3);
+            var el3 = dom.createElement("div");
+            dom.setAttribute(el3, "class", "chatArea");
+            var el4 = dom.createTextNode("\n                    ");
+            dom.appendChild(el3, el4);
+            var el4 = dom.createElement("ul");
+            dom.setAttribute(el4, "class", "messages");
+            var el5 = dom.createTextNode("\n");
+            dom.appendChild(el4, el5);
+            var el5 = dom.createComment("");
+            dom.appendChild(el4, el5);
+            var el5 = dom.createTextNode("                    ");
+            dom.appendChild(el4, el5);
+            dom.appendChild(el3, el4);
+            var el4 = dom.createTextNode("\n                ");
+            dom.appendChild(el3, el4);
+            dom.appendChild(el2, el3);
+            var el3 = dom.createTextNode("\n    \n            ");
+            dom.appendChild(el2, el3);
+            dom.appendChild(el1, el2);
+            var el2 = dom.createTextNode("\n           \n        ");
+            dom.appendChild(el1, el2);
             dom.appendChild(el0, el1);
             var el1 = dom.createTextNode("\n");
             dom.appendChild(el0, el1);
@@ -6398,11 +6487,47 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           },
           buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
             var morphs = new Array(1);
-            morphs[0] = dom.createMorphAt(fragment, 1, 1, contextualElement);
+            morphs[0] = dom.createMorphAt(dom.childAt(fragment, [1, 1, 1, 1]), 1, 1);
             return morphs;
           },
-          statements: [["content", "msg", ["loc", [null, [310, 4], [310, 11]]]]],
-          locals: ["msg"],
+          statements: [["block", "each", [["get", "selectedMessages", ["loc", [null, [323, 8], [323, 24]]]]], [], 0, null, ["loc", [null, [323, 0], [332, 13]]]]],
+          locals: [],
+          templates: [child0]
+        };
+      })();
+      var child1 = (function () {
+        return {
+          meta: {
+            "fragmentReason": false,
+            "revision": "Ember@2.3.0",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 339,
+                "column": 4
+              },
+              "end": {
+                "line": 341,
+                "column": 4
+              }
+            },
+            "moduleName": "embtest/templates/dashboard.hbs"
+          },
+          isEmpty: false,
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createTextNode("    No messages yet.\n");
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes() {
+            return [];
+          },
+          statements: [],
+          locals: [],
           templates: []
         };
       })();
@@ -6413,11 +6538,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           "loc": {
             "source": null,
             "start": {
-              "line": 308,
+              "line": 315,
               "column": 0
             },
             "end": {
-              "line": 312,
+              "line": 342,
               "column": 4
             }
           },
@@ -6429,59 +6554,24 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
         hasRendered: false,
         buildFragment: function buildFragment(dom) {
           var el0 = dom.createDocumentFragment();
+          var el1 = dom.createTextNode("\n");
+          dom.appendChild(el0, el1);
           var el1 = dom.createComment("");
           dom.appendChild(el0, el1);
           return el0;
         },
         buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
           var morphs = new Array(1);
-          morphs[0] = dom.createMorphAt(fragment, 0, 0, contextualElement);
-          dom.insertBoundary(fragment, 0);
+          morphs[0] = dom.createMorphAt(fragment, 1, 1, contextualElement);
           dom.insertBoundary(fragment, null);
           return morphs;
         },
-        statements: [["block", "each", [["get", "selectedMessages", ["loc", [null, [309, 8], [309, 24]]]]], [], 0, null, ["loc", [null, [309, 0], [311, 13]]]]],
+        statements: [["block", "if", [["get", "selectedMessages", ["loc", [null, [317, 6], [317, 22]]]]], [], 0, 1, ["loc", [null, [317, 0], [341, 11]]]]],
         locals: [],
-        templates: [child0]
+        templates: [child0, child1]
       };
     })();
     var child3 = (function () {
-      return {
-        meta: {
-          "fragmentReason": false,
-          "revision": "Ember@2.3.0",
-          "loc": {
-            "source": null,
-            "start": {
-              "line": 312,
-              "column": 4
-            },
-            "end": {
-              "line": 314,
-              "column": 4
-            }
-          },
-          "moduleName": "embtest/templates/dashboard.hbs"
-        },
-        isEmpty: false,
-        arity: 0,
-        cachedFragment: null,
-        hasRendered: false,
-        buildFragment: function buildFragment(dom) {
-          var el0 = dom.createDocumentFragment();
-          var el1 = dom.createTextNode("    No messages yet.\n");
-          dom.appendChild(el0, el1);
-          return el0;
-        },
-        buildRenderNodes: function buildRenderNodes() {
-          return [];
-        },
-        statements: [],
-        locals: [],
-        templates: []
-      };
-    })();
-    var child4 = (function () {
       var child0 = (function () {
         var child0 = (function () {
           var child0 = (function () {
@@ -6493,11 +6583,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                   "loc": {
                     "source": null,
                     "start": {
-                      "line": 323,
+                      "line": 351,
                       "column": 10
                     },
                     "end": {
-                      "line": 327,
+                      "line": 355,
                       "column": 12
                     }
                   },
@@ -6529,7 +6619,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                   morphs[0] = dom.createMorphAt(dom.childAt(fragment, [1]), 1, 1);
                   return morphs;
                 },
-                statements: [["content", "item.msgs.length", ["loc", [null, [325, 10], [325, 30]]]]],
+                statements: [["content", "item.msgs.length", ["loc", [null, [353, 10], [353, 30]]]]],
                 locals: [],
                 templates: []
               };
@@ -6542,11 +6632,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                   "loc": {
                     "source": null,
                     "start": {
-                      "line": 327,
+                      "line": 355,
                       "column": 12
                     },
                     "end": {
-                      "line": 331,
+                      "line": 359,
                       "column": 12
                     }
                   },
@@ -6583,11 +6673,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                 "loc": {
                   "source": null,
                   "start": {
-                    "line": 318,
+                    "line": 346,
                     "column": 6
                   },
                   "end": {
-                    "line": 333,
+                    "line": 361,
                     "column": 6
                   }
                 },
@@ -6634,7 +6724,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                 morphs[2] = dom.createMorphAt(element0, 5, 5);
                 return morphs;
               },
-              statements: [["content", "item.who", ["loc", [null, [321, 14], [321, 26]]]], ["content", "item.email", ["loc", [null, [322, 14], [322, 28]]]], ["block", "if", [["get", "item.connected", ["loc", [null, [323, 16], [323, 30]]]]], [], 0, 1, ["loc", [null, [323, 10], [331, 19]]]]],
+              statements: [["content", "item.who", ["loc", [null, [349, 14], [349, 26]]]], ["content", "item.email", ["loc", [null, [350, 14], [350, 28]]]], ["block", "if", [["get", "item.connected", ["loc", [null, [351, 16], [351, 30]]]]], [], 0, 1, ["loc", [null, [351, 10], [359, 19]]]]],
               locals: [],
               templates: [child0, child1]
             };
@@ -6646,11 +6736,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
               "loc": {
                 "source": null,
                 "start": {
-                  "line": 317,
+                  "line": 345,
                   "column": 4
                 },
                 "end": {
-                  "line": 335,
+                  "line": 363,
                   "column": 4
                 }
               },
@@ -6679,7 +6769,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
               dom.insertBoundary(fragment, 0);
               return morphs;
             },
-            statements: [["block", "paper-item", [], ["class", "md-3-line", "action", ["subexpr", "action", ["joinRoom", ["get", "item", ["loc", [null, [318, 64], [318, 68]]]]], [], ["loc", [null, [318, 45], [318, 69]]]]], 0, null, ["loc", [null, [318, 6], [333, 21]]]], ["content", "paper-divider", ["loc", [null, [334, 7], [334, 24]]]]],
+            statements: [["block", "paper-item", [], ["class", "md-3-line", "action", ["subexpr", "action", ["joinRoom", ["get", "item", ["loc", [null, [346, 64], [346, 68]]]]], [], ["loc", [null, [346, 45], [346, 69]]]]], 0, null, ["loc", [null, [346, 6], [361, 21]]]], ["content", "paper-divider", ["loc", [null, [362, 7], [362, 24]]]]],
             locals: ["item"],
             templates: [child0]
           };
@@ -6691,11 +6781,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             "loc": {
               "source": null,
               "start": {
-                "line": 316,
+                "line": 344,
                 "column": 2
               },
               "end": {
-                "line": 336,
+                "line": 364,
                 "column": 2
               }
             },
@@ -6718,7 +6808,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             dom.insertBoundary(fragment, null);
             return morphs;
           },
-          statements: [["block", "each", [["get", "listData", ["loc", [null, [317, 12], [317, 20]]]]], [], 0, null, ["loc", [null, [317, 4], [335, 13]]]]],
+          statements: [["block", "each", [["get", "listData", ["loc", [null, [345, 12], [345, 20]]]]], [], 0, null, ["loc", [null, [345, 4], [363, 13]]]]],
           locals: [],
           templates: [child0]
         };
@@ -6730,11 +6820,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           "loc": {
             "source": null,
             "start": {
-              "line": 315,
+              "line": 343,
               "column": 0
             },
             "end": {
-              "line": 337,
+              "line": 365,
               "column": 0
             }
           },
@@ -6757,7 +6847,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           dom.insertBoundary(fragment, null);
           return morphs;
         },
-        statements: [["block", "paper-list", [], [], 0, null, ["loc", [null, [316, 2], [336, 17]]]]],
+        statements: [["block", "paper-list", [], [], 0, null, ["loc", [null, [344, 2], [364, 17]]]]],
         locals: [],
         templates: [child0]
       };
@@ -6776,7 +6866,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             "column": 0
           },
           "end": {
-            "line": 347,
+            "line": 375,
             "column": 13
           }
         },
@@ -6795,7 +6885,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
         var el1 = dom.createTextNode("\n        ");
         dom.appendChild(el0, el1);
         var el1 = dom.createElement("style");
-        var el2 = dom.createTextNode("\n\n  body {\n    background: antiquewhite;\n        \n        background-size: contain;\n    font-family: 'Roboto', sans-serif;\n  }\n  .bubble {\n    position: relative;\n  /*  width: 250px;*/\n   \n    padding: 0px;\n    background: #FCF3D2;\n    -webkit-border-radius: 5px;\n    -moz-border-radius: 5px;\n    border-radius: 5px;\n    -webkit-box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);\n    -moz-box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);\n    box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);\n}\n\n\n\n.pointer {\n        content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n        left: 250px;\n    top: 0px;\n    border-width: 0px 0px 19px 17px;\n    border-color: transparent #e5ffcc;\n}\n\n/*rgb(216, 252, 199)*/\n.rightbubble {\n       position: relative;\n    /* width: auto; */\n    background: #fff;\n    border: #bbb solid 0;\n    -webkit-border-radius: 5px;\n    -moz-border-radius: 5px;\n    border-radius: 5px 0px 5px 5px;\n    margin: 0 auto;\n    z-index: 555;\n    border-color: rgb(0, 0, 0);\n      -webkit-box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);\n    -moz-box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);\n    box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);\n    background: #e5ffcc;\n    margin-bottom: 5px;\n    padding: 7px;\n    line-height: 18px;\n    font-size: 14px;\n    font-weight: 300;\n    min-width: 50px;\n    display: inline-block;\n        padding-right: 35px;\n        padding-top: 5px;\n    float: initial;\n}\n\n\n  .rightbubble:after {\n   content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n    left: 100%;\n    top: 0px;\n       border-width: 0px 0px 9px 6px;\n        border-color: transparent #e5ffcc;\n}\n\n.rightbubble:before {\n    content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n    left: 100%;\n    top: 0px;\n      border-width: 0px 0px 11px 6px;\n    border-color: transparent rgba(169, 173, 165, 0.62);\n}\n\n.leftbubble {\n    background: #fff;\n}\n\n .leftbubble:after {\n    content: \"\";\n    position: absolute;\n    top: 0px;\n    left: 0%;\n    border-style: solid;\n    border-width: -6px 2px -3px -7px;\n    display: block;\n    width: 0;\n    z-index: 1;\n    content: ' ';\n    position: absolute;\n    width: 0;\n    height: 0;\n    left: -8px;\n    right: auto;\n    top: 0px;\n    bottom: auto;\n    border: 8px solid;\n    \n    border-color: white transparent transparent transparent;\n}\n\n .leftbubble:before {\n\n    border-color: transparent;\n   \n}\n\n.imagebubble {\n        padding-right: 5px;\n    padding-bottom: 2px;\n    padding-top: 5px;\n}\n\n\n.inputbubble {\n    position: absolute;\n    bottom: 10px;\n     left: 50px; \n    width: 250px;\n    margin: auto;\n    height: 47px;\n    padding: 0px;\n    z-index: 1000;\n    background: #FFFFFF;\n    -webkit-border-radius: 5px;\n    -moz-border-radius: 5px;\n    border-radius: 5px 0px 5px 5px;\n    -webkit-box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n    -moz-box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n    box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n}\n\n  .inputbubble:after {\n      content: \"\";\n    position: absolute;\n    top: 8px;\n    right: -15;\n    border-style: solid;\n    border-width: 15px 0 15px 15px;\n    border-color: transparent #FFFFFF;\n    display: block;\n    width: 0;\n    z-index: 1;\n    content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n    left: 250px;\n    top: 0px;\n      border-width: 0px 0px 9px 7px;\n    border-color: transparent #fff;\n}\n\n\n.inputMessage {\n        border: none;\n    height: 100%;\n    width: 80%;\n    padding: 10px;\n    outline: none;\n    border-radius: 5px;\n}\n\n.messageLi {\n    text-align: end;\n    margin-top: 10px;\n}\n\n.lileft {\n    text-align: start;\n}\n\n  .fileDiv {\n    display: none;\n        height: 100px;\n    width: 100px;\n    position: absolute;\n    background: green;\n    border-radius: 50%;\n    box-shadow: rgba(97, 97, 97, 0.227451) 2px 2px 7px 4px;\n    top: 60%;\n    left: 200px;\n  }\n\n.logText {\n    background: #d4eaf4;\n    padding: 7px;\n    font-size: 10px;\n      box-shadow: rgba(97, 97, 97, 0.227451) 1px 1px 0px 0px;\n    border-radius: 4px;\n    margin-bottom: 20px;\n}\n\n.statusImg {\n    position: absolute;\n    /* background: red; */\n    height: 11px;\n    /* width: 13px; */\n    bottom: 3px;\n    right: 5px;\n}\n\n\n.typing {\n    padding-right: 5px;\n}\n\n.log {\n    margin: 25px;\n}\n.chatImage {\n    height: 150px;\n}\n\n.chatImageEnlarge {\n        position: fixed;\n    height: auto;\n    max-width: 90%;\n    left: 5%;\n    max-height: 100%;\n    top:5%;\n}\n.spinner {\n\n  width: 50px;\n  height: 20px;\n  text-align: center;\n  font-size: 10px;\n}\n\n.spinner > div {\n  background-color: #333;\n  height: 100%;\n  width: 3px;\n  display: inline-block;\n  margin: 3px;\n  \n  -webkit-animation: sk-stretchdelay 1.2s infinite ease-in-out;\n  animation: sk-stretchdelay 1.2s infinite ease-in-out;\n}\n\n.spinner .rect2 {\n  -webkit-animation-delay: -1.1s;\n  animation-delay: -1.1s;\n}\n\n.spinner .rect3 {\n  -webkit-animation-delay: -1.0s;\n  animation-delay: -1.0s;\n}\n\n.spinner .rect4 {\n  -webkit-animation-delay: -0.9s;\n  animation-delay: -0.9s;\n}\n\n.spinner .rect5 {\n  -webkit-animation-delay: -0.8s;\n  animation-delay: -0.8s;\n}\n\n@-webkit-keyframes sk-stretchdelay {\n  0%, 40%, 100% { -webkit-transform: scaleY(0.4) }  \n  20% { -webkit-transform: scaleY(1.0) }\n}\n\n@keyframes sk-stretchdelay {\n  0%, 40%, 100% { \n    transform: scaleY(0.4);\n    -webkit-transform: scaleY(0.4);\n  }  20% { \n    transform: scaleY(1.0);\n    -webkit-transform: scaleY(1.0);\n  }\n");
+        var el2 = dom.createTextNode("\n\n  body {\n    background: antiquewhite;\n        \n        background-size: contain;\n    font-family: 'Roboto', sans-serif;\n  }\n  .bubble {\n    position: relative;\n  /*  width: 250px;*/\n   \n    padding: 0px;\n    background: #FCF3D2;\n    -webkit-border-radius: 5px;\n    -moz-border-radius: 5px;\n    border-radius: 5px;\n    -webkit-box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);\n    -moz-box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);\n    box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);\n}\n\n\n\n.pointer {\n        content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n        left: 250px;\n    top: 0px;\n    border-width: 0px 0px 19px 17px;\n    border-color: transparent #e5ffcc;\n}\n\n/*rgb(216, 252, 199)*/\n.rightbubble {\n       position: relative;\n    /* width: auto; */\n    background: #fff;\n    border: #bbb solid 0;\n    -webkit-border-radius: 5px;\n    -moz-border-radius: 5px;\n    border-radius: 5px 0px 5px 5px;\n    margin: 0 auto;\n    z-index: 555;\n    border-color: rgb(0, 0, 0);\n      -webkit-box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);\n    -moz-box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);\n    box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);\n    background: #e5ffcc;\n    margin-bottom: 5px;\n    padding: 7px;\n    line-height: 18px;\n    font-size: 14px;\n    font-weight: 300;\n    min-width: 50px;\n    display: inline-block;\n        padding-right: 35px;\n        padding-top: 5px;\n    float: initial;\n}\n\n\n  .rightbubble:after {\n   content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n    left: 100%;\n    top: 0px;\n       border-width: 0px 0px 9px 6px;\n        border-color: transparent #e5ffcc;\n}\n\n.rightbubble:before {\n    content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n    left: 100%;\n    top: 0px;\n      border-width: 0px 0px 11px 6px;\n    border-color: transparent rgba(169, 173, 165, 0.62);\n}\n\n.leftbubble {\n    background: #fff;\n}\n\n .leftbubble:after {\n    content: \"\";\n    position: absolute;\n    top: 0px;\n    left: 0%;\n    border-style: solid;\n    border-width: -6px 2px -3px -7px;\n    display: block;\n    width: 0;\n    z-index: 1;\n    content: ' ';\n    position: absolute;\n    width: 0;\n    height: 0;\n    left: -8px;\n    right: auto;\n    top: 0px;\n    bottom: auto;\n    border: 8px solid;\n    \n    border-color: white transparent transparent transparent;\n}\n\n .leftbubble:before {\n\n    border-color: transparent;\n   \n}\n\n.imagebubble {\n        padding-right: 5px;\n    padding-bottom: 2px;\n    padding-top: 5px;\n}\n\n\n.inputbubble {\n    position: absolute;\n    bottom: 10px;\n     left: 50px; \n    width: 250px;\n    margin: auto;\n    height: 47px;\n    padding: 0px;\n    z-index: 1000;\n    background: #FFFFFF;\n    -webkit-border-radius: 5px;\n    -moz-border-radius: 5px;\n    border-radius: 5px 0px 5px 5px;\n    -webkit-box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n    -moz-box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n    box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n}\n\n  .inputbubble:after {\n      content: \"\";\n    position: absolute;\n    top: 8px;\n    right: -15;\n    border-style: solid;\n    border-width: 15px 0 15px 15px;\n    border-color: transparent #FFFFFF;\n    display: block;\n    width: 0;\n    z-index: 1;\n    content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n    left: 250px;\n    top: 0px;\n      border-width: 0px 0px 9px 7px;\n    border-color: transparent #fff;\n}\n\n\n.inputMessage {\n        border: none;\n    height: 100%;\n    width: 80%;\n    padding: 10px;\n    outline: none;\n    border-radius: 5px;\n}\n\n.messageLi {\n    text-align: end;\n    margin-top: 10px;\n}\n\n.lileft {\n    text-align: start;\n}\n\n  .fileDiv {\n    display: none;\n        height: 100px;\n    width: 100px;\n    position: absolute;\n    background: green;\n    border-radius: 50%;\n    box-shadow: rgba(97, 97, 97, 0.227451) 2px 2px 7px 4px;\n    top: 60%;\n    left: 200px;\n  }\n\n.logText {\n    background: #d4eaf4;\n    padding: 7px;\n    font-size: 10px;\n      box-shadow: rgba(97, 97, 97, 0.227451) 1px 1px 0px 0px;\n    border-radius: 4px;\n    margin-bottom: 20px;\n}\n\n.statusImg {\n    position: absolute;\n    /* background: red; */\n    height: 11px;\n    /* width: 13px; */\n    bottom: 3px;\n    right: 5px;\n}\n\n\n.typing {\n    padding-right: 5px;\n}\n\n.log {\n    margin: 25px;\n}\n.chatImage {\n    height: 150px;\n}\n\n.chatImageEnlarge {\n        position: fixed;\n    height: auto;\n    max-width: 90%;\n    left: 5%;\n    max-height: 100%;\n    top:5%;\n}\n\n.pages {\n  height: 400px;\n}\n.chat.page {\n  display: block;\n}\n.spinner {\n\n  width: 50px;\n  height: 20px;\n  text-align: center;\n  font-size: 10px;\n}\n\n.spinner > div {\n  background-color: #333;\n  height: 100%;\n  width: 3px;\n  display: inline-block;\n  margin: 3px;\n  \n  -webkit-animation: sk-stretchdelay 1.2s infinite ease-in-out;\n  animation: sk-stretchdelay 1.2s infinite ease-in-out;\n}\n\n.spinner .rect2 {\n  -webkit-animation-delay: -1.1s;\n  animation-delay: -1.1s;\n}\n\n.spinner .rect3 {\n  -webkit-animation-delay: -1.0s;\n  animation-delay: -1.0s;\n}\n\n.spinner .rect4 {\n  -webkit-animation-delay: -0.9s;\n  animation-delay: -0.9s;\n}\n\n.spinner .rect5 {\n  -webkit-animation-delay: -0.8s;\n  animation-delay: -0.8s;\n}\n\n@-webkit-keyframes sk-stretchdelay {\n  0%, 40%, 100% { -webkit-transform: scaleY(0.4) }  \n  20% { -webkit-transform: scaleY(1.0) }\n}\n\n@keyframes sk-stretchdelay {\n  0%, 40%, 100% { \n    transform: scaleY(0.4);\n    -webkit-transform: scaleY(0.4);\n  }  20% { \n    transform: scaleY(1.0);\n    -webkit-transform: scaleY(1.0);\n  }\n");
         dom.appendChild(el1, el2);
         dom.appendChild(el0, el1);
         var el1 = dom.createTextNode("\n");
@@ -6855,9 +6945,9 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
         morphs[4] = dom.createMorphAt(fragment, 11, 11, contextualElement);
         return morphs;
       },
-      statements: [["block", "paper-button", [], ["class", "login-options", "raised", true, "primary", true, "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [305, 70], [305, 75]]]]], [], []], "action", ["subexpr", "action", ["testprotectedApi"], [], ["loc", [null, [305, 83], [305, 110]]]]], 0, null, ["loc", [null, [305, 0], [305, 147]]]], ["block", "paper-button", [], ["class", "login-options", "raised", true, "primary", true, "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [306, 70], [306, 75]]]]], [], []], "action", ["subexpr", "action", ["socketTest"], [], ["loc", [null, [306, 83], [306, 104]]]]], 1, null, ["loc", [null, [306, 0], [306, 145]]]], ["content", "outlet", ["loc", [null, [307, 0], [307, 10]]]], ["block", "if", [["get", "selectedMessages", ["loc", [null, [308, 6], [308, 22]]]]], [], 2, 3, ["loc", [null, [308, 0], [314, 11]]]], ["block", "paper-content", [], ["class", "md-whiteframe-z1 list-demo name-list"], 4, null, ["loc", [null, [315, 0], [337, 18]]]]],
+      statements: [["block", "paper-button", [], ["class", "login-options", "raised", true, "primary", true, "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [312, 70], [312, 75]]]]], [], []], "action", ["subexpr", "action", ["testprotectedApi"], [], ["loc", [null, [312, 83], [312, 110]]]]], 0, null, ["loc", [null, [312, 0], [312, 147]]]], ["block", "paper-button", [], ["class", "login-options", "raised", true, "primary", true, "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [313, 70], [313, 75]]]]], [], []], "action", ["subexpr", "action", ["socketTest"], [], ["loc", [null, [313, 83], [313, 104]]]]], 1, null, ["loc", [null, [313, 0], [313, 145]]]], ["content", "outlet", ["loc", [null, [314, 0], [314, 10]]]], ["block", "paper-content", [], ["class", "md-whiteframe-z1 list-demo chat-window"], 2, null, ["loc", [null, [315, 0], [342, 22]]]], ["block", "paper-content", [], ["class", "md-whiteframe-z1 list-demo name-list"], 3, null, ["loc", [null, [343, 0], [365, 18]]]]],
       locals: [],
-      templates: [child0, child1, child2, child3, child4]
+      templates: [child0, child1, child2, child3]
     };
   })());
 });
@@ -7514,7 +7604,7 @@ catch(err) {
 
 /* jshint ignore:start */
 if (!runningTests) {
-  require("embtest/app")["default"].create({"name":"embtest","version":"0.0.0+7aabd643"});
+  require("embtest/app")["default"].create({"name":"embtest","version":"0.0.0+b305a52b"});
 }
 /* jshint ignore:end */
 //# sourceMappingURL=embtest.map

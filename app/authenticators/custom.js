@@ -2,7 +2,7 @@
 import Ember from 'ember';
 import Base from 'ember-simple-auth/authenticators/base';
 export default Base.extend({
-    tokenEndpoint: 'http://172.16.1.168:3000/login',
+    tokenEndpoint: 'http://localhost:3000/login',
     restore: function(data) {
         return new Ember.RSVP.Promise(function(resolve, reject) {
             if (!Ember.isEmpty(data.token)) {

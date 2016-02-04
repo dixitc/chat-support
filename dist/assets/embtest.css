@@ -8531,3 +8531,9 @@ a {
   text-align: center;
   font-size: 10px;
   border-radius: 10px; }
+
+.chat-window {
+  height: auto;
+  max-width: 415px;
+  width: 90%;
+  float: right; }

@@ -249,6 +249,13 @@
     max-height: 100%;
     top:5%;
 }
+
+.pages {
+  height: 400px;
+}
+.chat.page {
+  display: block;
+}
 .spinner {
 
   width: 50px;
@@ -305,13 +312,34 @@
 {{#paper-button class="login-options" raised=true primary=true signup=login action=(action "testprotectedApi")}}test protected api{{/paper-button}}
 {{#paper-button class="login-options" raised=true primary=true signup=login action=(action "socketTest")}}test socket connection{{/paper-button}}
 {{outlet}}
+{{#paper-content class="md-whiteframe-z1 list-demo chat-window"}}
+
 {{#if selectedMessages}}
+
+      <ul class="pages">
+            <li class="chat page">
+                <div class="chatArea">
+                    <ul class="messages">
 {{#each selectedMessages as |msg|}}
-    {{msg}}
+<li class="messageLi">'
+	<div class="rightbubble message">
+		<span class="messageBody">
+			
+	    	{{msg}}
+		</span>
+    </div>
+    </li>
     {{/each}}
+                    </ul>
+                </div>
+    
+            </li>
+           
+        </ul>
     {{else}}
     No messages yet.
     {{/if}}
+    {{/paper-content}}
 {{#paper-content class="md-whiteframe-z1 list-demo name-list"}}
   {{#paper-list}}
     {{#each listData as |item|}}

@@ -34,7 +34,7 @@ export default Ember.Controller.extend( {
 		 * 2) The next step you need to do is to create your actual socketIO.
 		 */
 		var socket = this.get( 'socketIOService' )
-			.socketFor( 'http://172.16.1.168:3001/' );
+			.socketFor( 'http://localhost:3001/' );
 
 		/*
 		 * 3) Define any event handlers
@@ -124,7 +124,7 @@ export default Ember.Controller.extend( {
 			item.set( 'connected', true );
 			console.log( item.get( 'email' ) )
 			var socket = this.get( 'socketIOService' )
-				.socketFor( 'http://172.16.1.168:3001/' );
+				.socketFor( 'http://localhost:3001/' );
 			socket.emit( 'room', {
 				room_name: item.email
 			} );
@@ -141,7 +141,7 @@ export default Ember.Controller.extend( {
 
 		},
 		socketTest: function() {
-			var socket = io( 'http://172.16.1.168:3001' );
+			var socket = io( 'http://localhost:3001' );
 			socket.emit( 'join support', {
 				email: 'support@example.com'
 			} );
