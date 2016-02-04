@@ -30,6 +30,12 @@ export default Ember.Controller.extend( {
 	init: function() {
 		this._super.apply( this, arguments );
 		console.log( 'INIT SOCKET' );
+		$(window).keydown(function(e){
+						// Auto-focus the current input when a key is typed
+			if ( ( event.ctrlKey || event.metaKey || event.altKey ) ) {
+				$( '.inputMessage' ).focus();
+			}
+		})
 		/*
 		 * 2) The next step you need to do is to create your actual socketIO.
 		 */
@@ -111,14 +117,41 @@ export default Ember.Controller.extend( {
 		this.listData[ this.listData.map( function( e ) {
 				return e.who;
 			} )
-			.indexOf( data.username ) ].msgs.pushObject( data.msg )
+			.indexOf( data.username ) ].msgs.pushObject( {msg : data.msg , type : true} )
 		console.log( this.listData.map( function( e ) {
 				return e.who;
 			} )
 			.indexOf( data.username ) );
+		$('.messages').animate({
+  scrollTop: $('.messages').get(0).scrollHeight}, 100);
 		//alert( data.msg );
 	},
 	actions: {
+		sendMessage : function(value){
+			console.log(value);
+			let message = {}
+		message.msg = value;
+		// Prevent markup from being injected into the message
+			var clientUser = this.listData[ this.listData.map( function( e ) {
+				return e.who;
+			} )
+			.indexOf( this.get('selectedUser')) ]
+			console.log(clientUser)
+		let email = clientUser.email;
+		let username = this.get('selectedUser.username');
+		message.userEmail = email
+		message.username = clientUser.who;
+		console.log(message);
+			//socket.emit('stop typing',message);
+		var socket = this.get( 'socketIOService' )
+				.socketFor( 'http://localhost:3001/' );
+		socket.emit( 'support message', message );
+		$('.inputMessage').val('');
+		clientUser.msgs.pushObject({msg : message.msg , type:false});
+		$('.messages').animate({
+  scrollTop: $('.messages').get(0).scrollHeight}, 100);
+			//emit support message to selected user email
+		},
 		joinRoom: function( item ) {
 			console.log( item )
 			item.set( 'connected', true );

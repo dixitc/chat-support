@@ -1,0 +1,5 @@
+known bugs
+on restore session auth token is not refreshed !important
+handling server errors in login and signup !important
+setting currentuser properly
+initializing socket and injecting it properly

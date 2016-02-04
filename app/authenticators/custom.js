@@ -10,6 +10,7 @@ export default Base.extend({
                 //parse user id from token
                 //get user
                 //set user as current user
+                //set refreshed token
                 resolve(data);
             } else {
                 reject();
