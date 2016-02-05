@@ -58,7 +58,7 @@ define('embtest/tests/controllers/dashboard.jshint', ['exports'], function (expo
   QUnit.module('JSHint - controllers');
   QUnit.test('controllers/dashboard.js should pass jshint', function (assert) {
     assert.expect(1);
-    assert.ok(false, 'controllers/dashboard.js should pass jshint.\ncontrollers/dashboard.js: line 17, col 57, Missing semicolon.\ncontrollers/dashboard.js: line 24, col 36, \'index\' is defined but never used.\ncontrollers/dashboard.js: line 22, col 69, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 33, col 36, \'e\' is defined but never used.\ncontrollers/dashboard.js: line 38, col 11, Missing semicolon.\ncontrollers/dashboard.js: line 67, col 37, Missing semicolon.\ncontrollers/dashboard.js: line 66, col 41, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 68, col 12, Missing semicolon.\ncontrollers/dashboard.js: line 69, col 50, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 79, col 12, Missing semicolon.\ncontrollers/dashboard.js: line 87, col 18, Missing semicolon.\ncontrollers/dashboard.js: line 91, col 12, Missing semicolon.\ncontrollers/dashboard.js: line 92, col 40, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 94, col 12, Missing semicolon.\ncontrollers/dashboard.js: line 95, col 57, Missing semicolon.\ncontrollers/dashboard.js: line 96, col 48, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 98, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 100, col 45, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 110, col 62, Missing semicolon.\ncontrollers/dashboard.js: line 120, col 90, Missing semicolon.\ncontrollers/dashboard.js: line 132, col 29, Missing semicolon.\ncontrollers/dashboard.js: line 138, col 50, Missing semicolon.\ncontrollers/dashboard.js: line 139, col 36, Missing semicolon.\ncontrollers/dashboard.js: line 142, col 34, Missing semicolon.\ncontrollers/dashboard.js: line 141, col 13, \'username\' is defined but never used.\ncontrollers/dashboard.js: line 156, col 32, Missing semicolon.\ncontrollers/dashboard.js: line 158, col 47, Missing semicolon.\ncontrollers/dashboard.js: line 164, col 48, Missing semicolon.\ncontrollers/dashboard.js: line 167, col 17, \'self\' is defined but never used.\ncontrollers/dashboard.js: line 168, col 17, \'user\' is defined but never used.\ncontrollers/dashboard.js: line 183, col 39, Missing semicolon.\ncontrollers/dashboard.js: line 184, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 192, col 51, Missing semicolon.\ncontrollers/dashboard.js: line 195, col 68, Missing semicolon.\ncontrollers/dashboard.js: line 198, col 42, Missing semicolon.\ncontrollers/dashboard.js: line 202, col 43, Missing semicolon.\ncontrollers/dashboard.js: line 204, col 47, Missing semicolon.\ncontrollers/dashboard.js: line 207, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 212, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 213, col 44, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 215, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 217, col 29, Missing semicolon.\ncontrollers/dashboard.js: line 219, col 16, Missing semicolon.\ncontrollers/dashboard.js: line 222, col 20, Missing semicolon.\ncontrollers/dashboard.js: line 33, col 9, \'$\' is not defined.\ncontrollers/dashboard.js: line 36, col 17, \'$\' is not defined.\ncontrollers/dashboard.js: line 125, col 9, \'$\' is not defined.\ncontrollers/dashboard.js: line 126, col 14, \'$\' is not defined.\ncontrollers/dashboard.js: line 149, col 9, \'$\' is not defined.\ncontrollers/dashboard.js: line 151, col 9, \'$\' is not defined.\ncontrollers/dashboard.js: line 151, col 9, Too many errors. (65% scanned).\n\n52 errors');
+    assert.ok(false, 'controllers/dashboard.js should pass jshint.\ncontrollers/dashboard.js: line 14, col 49, Missing semicolon.\ncontrollers/dashboard.js: line 25, col 28, \'index\' is defined but never used.\ncontrollers/dashboard.js: line 23, col 65, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 36, col 32, \'e\' is defined but never used.\ncontrollers/dashboard.js: line 41, col 7, Missing semicolon.\ncontrollers/dashboard.js: line 59, col 41, Missing semicolon.\ncontrollers/dashboard.js: line 91, col 35, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 93, col 7, Missing semicolon.\ncontrollers/dashboard.js: line 94, col 44, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 104, col 7, Missing semicolon.\ncontrollers/dashboard.js: line 113, col 10, Missing semicolon.\ncontrollers/dashboard.js: line 117, col 7, Missing semicolon.\ncontrollers/dashboard.js: line 118, col 34, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 120, col 7, Missing semicolon.\ncontrollers/dashboard.js: line 121, col 51, Missing semicolon.\ncontrollers/dashboard.js: line 122, col 42, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 124, col 9, Missing semicolon.\ncontrollers/dashboard.js: line 126, col 39, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 136, col 51, Missing semicolon.\ncontrollers/dashboard.js: line 145, col 31, Missing semicolon.\ncontrollers/dashboard.js: line 153, col 9, Missing semicolon.\ncontrollers/dashboard.js: line 158, col 9, Missing semicolon.\ncontrollers/dashboard.js: line 159, col 49, Missing semicolon.\ncontrollers/dashboard.js: line 169, col 21, Missing semicolon.\ncontrollers/dashboard.js: line 175, col 42, Missing semicolon.\ncontrollers/dashboard.js: line 216, col 43, Missing semicolon.\ncontrollers/dashboard.js: line 220, col 23, Missing semicolon.\ncontrollers/dashboard.js: line 226, col 44, Missing semicolon.\ncontrollers/dashboard.js: line 258, col 41, Missing semicolon.\ncontrollers/dashboard.js: line 264, col 11, \'self\' is defined but never used.\ncontrollers/dashboard.js: line 265, col 11, \'user\' is defined but never used.\ncontrollers/dashboard.js: line 280, col 29, Missing semicolon.\ncontrollers/dashboard.js: line 281, col 9, Missing semicolon.\ncontrollers/dashboard.js: line 288, col 36, Missing semicolon.\ncontrollers/dashboard.js: line 291, col 56, Missing semicolon.\ncontrollers/dashboard.js: line 298, col 31, Missing semicolon.\ncontrollers/dashboard.js: line 300, col 35, Missing semicolon.\ncontrollers/dashboard.js: line 303, col 9, Missing semicolon.\ncontrollers/dashboard.js: line 308, col 9, Missing semicolon.\ncontrollers/dashboard.js: line 309, col 36, \'data\' is defined but never used.\ncontrollers/dashboard.js: line 311, col 9, Missing semicolon.\ncontrollers/dashboard.js: line 313, col 19, Missing semicolon.\ncontrollers/dashboard.js: line 315, col 9, Missing semicolon.\ncontrollers/dashboard.js: line 318, col 11, Missing semicolon.\ncontrollers/dashboard.js: line 36, col 5, \'$\' is not defined.\ncontrollers/dashboard.js: line 39, col 9, \'$\' is not defined.\ncontrollers/dashboard.js: line 44, col 5, \'$\' is not defined.\ncontrollers/dashboard.js: line 162, col 5, \'$\' is not defined.\ncontrollers/dashboard.js: line 163, col 18, \'$\' is not defined.\ncontrollers/dashboard.js: line 190, col 5, \'$\' is not defined.\ncontrollers/dashboard.js: line 190, col 5, Too many errors. (58% scanned).\n\n52 errors');
   });
 });
 define('embtest/tests/controllers/login.jshint', ['exports'], function (exports) {
@@ -67,7 +67,7 @@ define('embtest/tests/controllers/login.jshint', ['exports'], function (exports)
   QUnit.module('JSHint - controllers');
   QUnit.test('controllers/login.js should pass jshint', function (assert) {
     assert.expect(1);
-    assert.ok(false, 'controllers/login.js should pass jshint.\ncontrollers/login.js: line 71, col 44, Missing semicolon.\ncontrollers/login.js: line 70, col 17, \'user\' is defined but never used.\ncontrollers/login.js: line 105, col 17, \'credentials\' is defined but never used.\ncontrollers/login.js: line 139, col 64, Missing semicolon.\n\n4 errors');
+    assert.ok(false, 'controllers/login.js should pass jshint.\ncontrollers/login.js: line 78, col 36, Missing semicolon.\ncontrollers/login.js: line 77, col 11, \'user\' is defined but never used.\ncontrollers/login.js: line 112, col 11, \'credentials\' is defined but never used.\ncontrollers/login.js: line 151, col 48, Missing semicolon.\n\n4 errors');
   });
 });
 define('embtest/tests/helpers/destroy-app', ['exports', 'ember'], function (exports, _ember) {
@@ -437,6 +437,155 @@ define('embtest/tests/integration/components/animated-if-test.jshint', ['exports
   QUnit.test('integration/components/animated-if-test.js should pass jshint', function (assert) {
     assert.expect(1);
     assert.ok(true, 'integration/components/animated-if-test.js should pass jshint.');
+  });
+});
+define('embtest/tests/integration/components/input-file-test', ['exports', 'ember-qunit'], function (exports, _emberQunit) {
+
+  (0, _emberQunit.moduleForComponent)('input-file', 'Integration | Component | input file', {
+    integration: true
+  });
+
+  (0, _emberQunit.test)('it renders', function (assert) {
+    // Set any properties with this.set('myProperty', 'value');
+    // Handle any actions with this.on('myAction', function(val) { ... });"
+
+    this.render(Ember.HTMLBars.template((function () {
+      return {
+        meta: {
+          'fragmentReason': {
+            'name': 'missing-wrapper',
+            'problems': ['wrong-type']
+          },
+          'revision': 'Ember@2.3.0',
+          'loc': {
+            'source': null,
+            'start': {
+              'line': 1,
+              'column': 0
+            },
+            'end': {
+              'line': 1,
+              'column': 14
+            }
+          }
+        },
+        isEmpty: false,
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createComment('');
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(fragment, 0, 0, contextualElement);
+          dom.insertBoundary(fragment, 0);
+          dom.insertBoundary(fragment, null);
+          return morphs;
+        },
+        statements: [['content', 'input-file', ['loc', [null, [1, 0], [1, 14]]]]],
+        locals: [],
+        templates: []
+      };
+    })()));
+
+    assert.equal(this.$().text().trim(), '');
+
+    // Template block usage:"
+    this.render(Ember.HTMLBars.template((function () {
+      var child0 = (function () {
+        return {
+          meta: {
+            'fragmentReason': false,
+            'revision': 'Ember@2.3.0',
+            'loc': {
+              'source': null,
+              'start': {
+                'line': 2,
+                'column': 4
+              },
+              'end': {
+                'line': 4,
+                'column': 4
+              }
+            }
+          },
+          isEmpty: false,
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createTextNode('      template block text\n');
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes() {
+            return [];
+          },
+          statements: [],
+          locals: [],
+          templates: []
+        };
+      })();
+
+      return {
+        meta: {
+          'fragmentReason': {
+            'name': 'missing-wrapper',
+            'problems': ['wrong-type']
+          },
+          'revision': 'Ember@2.3.0',
+          'loc': {
+            'source': null,
+            'start': {
+              'line': 1,
+              'column': 0
+            },
+            'end': {
+              'line': 5,
+              'column': 2
+            }
+          }
+        },
+        isEmpty: false,
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createTextNode('\n');
+          dom.appendChild(el0, el1);
+          var el1 = dom.createComment('');
+          dom.appendChild(el0, el1);
+          var el1 = dom.createTextNode('  ');
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(fragment, 1, 1, contextualElement);
+          return morphs;
+        },
+        statements: [['block', 'input-file', [], [], 0, null, ['loc', [null, [2, 4], [4, 19]]]]],
+        locals: [],
+        templates: [child0]
+      };
+    })()));
+
+    assert.equal(this.$().text().trim(), 'template block text');
+  });
+});
+define('embtest/tests/integration/components/input-file-test.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - integration/components');
+  QUnit.test('integration/components/input-file-test.js should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'integration/components/input-file-test.js should pass jshint.');
   });
 });
 define('embtest/tests/models/user.jshint', ['exports'], function (exports) {

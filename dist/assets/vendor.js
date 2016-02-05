@@ -92631,63 +92631,60 @@ define("ember-cli-app-version/templates/app-version", ["exports"], function (exp
   })());
 });
 define('ember-computed-validations/mixins/computed-validations', ['exports', 'ember'], function (exports, _ember) {
-  'use strict';
+    'use strict';
 
-  function _toConsumableArray(arr) {
-    if (Array.isArray(arr)) {
-      for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];return arr2;
-    } else {
-      return Array.from(arr);
+    function _toConsumableArray(arr) {
+        if (Array.isArray(arr)) {
+            for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];return arr2;
+        } else {
+            return Array.from(arr);
+        }
     }
-  }
 
-  exports['default'] = _ember['default'].Mixin.create({
-    initEmberComputedValidations: _ember['default'].on('init', function () {
-      if (!this.computedValidations) {
-        return;
-      }
-
-      var validations = _ember['default'].A();
-
-      var properties = Object.keys(this.computedValidations);
-      for (var i = 0; i < properties.length; i++) {
-        var property = properties[i];
-        var validationsForProperty = Object.keys(this.computedValidations[property]);
-        validations.pushObjects(validationsForProperty);
-      }
-
-      _ember['default'].defineProperty(this, 'computedErrors', _ember['default'].computed.apply(_ember['default'], _toConsumableArray(validations).concat([function () {
-        var _this = this;
-
-        return _ember['default'].Object.create({
-          unknownProperty: function unknownProperty(property) {
-            if (!_this.computedValidations[property]) {
-              return _ember['default'].A();
+    exports['default'] = _ember['default'].Mixin.create({
+        initEmberComputedValidations: _ember['default'].on('init', function () {
+            if (!this.computedValidations) {
+                return;
             }
-            var validationsForProperty = Object.keys(_this.computedValidations[property]);
-            return validationsForProperty.reduce(function (errorsForProperty, validationForProperty) {
-              if (!_this.get(validationForProperty)) {
-                var errorMessage = _this.computedValidations[property][validationForProperty];
-                var errorMessageNeedsEvaluated = typeof errorMessage === 'function';
-                errorsForProperty.push(errorMessageNeedsEvaluated ? errorMessage.call(_this) : errorMessage);
-              }
-              return errorsForProperty;
-            }, _ember['default'].A());
-          }
-        });
-      }])));
+            var validations = _ember['default'].A();
+            console.log('computedValidations');
+            console.log(this.computedValidations);
+            var properties = Object.keys(this.computedValidations);
+            for (var i = 0; i < properties.length; i++) {
+                var property = properties[i];
+                var validationsForProperty = Object.keys(this.computedValidations[property]);
+                validations.pushObjects(validationsForProperty);
+            }
+            _ember['default'].defineProperty(this, 'computedErrors', _ember['default'].computed.apply(_ember['default'], _toConsumableArray(validations).concat([function () {
+                var _this = this;
 
-      _ember['default'].defineProperty(this, 'computedIsValid', _ember['default'].computed.apply(_ember['default'], _toConsumableArray(validations).concat([function () {
-        var _this2 = this;
+                return _ember['default'].Object.create({
+                    unknownProperty: function unknownProperty(property) {
+                        if (!_this.computedValidations[property]) {
+                            return _ember['default'].A();
+                        }
+                        var validationsForProperty = Object.keys(_this.computedValidations[property]);
+                        return validationsForProperty.reduce(function (errorsForProperty, validationForProperty) {
+                            if (!_this.get(validationForProperty)) {
+                                var errorMessage = _this.computedValidations[property][validationForProperty];
+                                var errorMessageNeedsEvaluated = typeof errorMessage === 'function';
+                                errorsForProperty.push(errorMessageNeedsEvaluated ? errorMessage.call(_this) : errorMessage);
+                            }
+                            return errorsForProperty;
+                        }, _ember['default'].A());
+                    }
+                });
+            }])));
+            _ember['default'].defineProperty(this, 'computedIsValid', _ember['default'].computed.apply(_ember['default'], _toConsumableArray(validations).concat([function () {
+                var _this2 = this;
 
-        return validations.every(function (validation) {
-          return _this2.get(validation);
-        });
-      }])));
-
-      _ember['default'].defineProperty(this, 'computedIsInvalid', _ember['default'].computed.not('computedIsValid'));
-    })
-  });
+                return validations.every(function (validation) {
+                    return _this2.get(validation);
+                });
+            }])));
+            _ember['default'].defineProperty(this, 'computedIsInvalid', _ember['default'].computed.not('computedIsValid'));
+        })
+    });
 });
 define('ember-css-transitions/components/transition-group', ['exports', 'ember', 'ember-css-transitions/mixins/transition-mixin'], function (exports, _ember, _emberCssTransitionsMixinsTransitionMixin) {
   'use strict';
@@ -101118,6 +101115,173 @@ define('ember-wormhole/components/ember-wormhole', ['exports', 'ember'], functio
     }
 
   });
+});
+define('emberx-file-input/components/x-file-input', ['exports', 'ember', 'emberx-file-input/templates/components/x-file-input'], function (exports, _ember, _emberxFileInputTemplatesComponentsXFileInput) {
+  'use strict';
+
+  exports['default'] = _ember['default'].Component.extend({
+    classNameBindings: [':x-file-input', 'disabled:x-file-input--disabled'],
+    attributeBindings: ['accept'],
+    tagName: 'span',
+    layout: _emberxFileInputTemplatesComponentsXFileInput['default'],
+    tabindex: 0,
+
+    /**
+     * Listens for change events on the native file input and dispatches
+     * the corresponding action up the context chain.
+     *
+     * @private
+     * @method
+     * @param {$.Event} e Native change event
+     */
+    change: function change(e) {
+      this.sendAction("action", e.target.files);
+    },
+
+    randomId: _ember['default'].computed(function () {
+      return Math.random().toString(36).substring(7);
+    })
+  });
+});
+define("emberx-file-input/templates/components/x-file-input", ["exports"], function (exports) {
+  "use strict";
+
+  exports["default"] = Ember.HTMLBars.template((function () {
+    var child0 = (function () {
+      return {
+        meta: {
+          "fragmentReason": false,
+          "revision": "Ember@2.3.0",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 5,
+              "column": 2
+            },
+            "end": {
+              "line": 7,
+              "column": 2
+            }
+          }
+        },
+        isEmpty: false,
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createTextNode("    ");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createTextNode("\n");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(fragment, 1, 1, contextualElement);
+          return morphs;
+        },
+        statements: [["content", "yield", ["loc", [null, [6, 4], [6, 13]]]]],
+        locals: [],
+        templates: []
+      };
+    })();
+    var child1 = (function () {
+      return {
+        meta: {
+          "fragmentReason": false,
+          "revision": "Ember@2.3.0",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 7,
+              "column": 2
+            },
+            "end": {
+              "line": 9,
+              "column": 2
+            }
+          }
+        },
+        isEmpty: false,
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createTextNode("    ");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createTextNode("\n");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(fragment, 1, 1, contextualElement);
+          return morphs;
+        },
+        statements: [["content", "alt", ["loc", [null, [8, 4], [8, 11]]]]],
+        locals: [],
+        templates: []
+      };
+    })();
+    return {
+      meta: {
+        "fragmentReason": {
+          "name": "missing-wrapper",
+          "problems": ["wrong-type", "multiple-nodes"]
+        },
+        "revision": "Ember@2.3.0",
+        "loc": {
+          "source": null,
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 11,
+            "column": 0
+          }
+        }
+      },
+      isEmpty: false,
+      arity: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      buildFragment: function buildFragment(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n\n");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createElement("label");
+        var el2 = dom.createTextNode("\n");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createComment("");
+        dom.appendChild(el1, el2);
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n");
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+        var element0 = dom.childAt(fragment, [2]);
+        var morphs = new Array(3);
+        morphs[0] = dom.createMorphAt(fragment, 0, 0, contextualElement);
+        morphs[1] = dom.createAttrMorph(element0, 'for');
+        morphs[2] = dom.createMorphAt(element0, 1, 1);
+        dom.insertBoundary(fragment, 0);
+        return morphs;
+      },
+      statements: [["inline", "input", [], ["id", ["subexpr", "@mut", [["get", "randomId", ["loc", [null, [1, 11], [1, 19]]]]], [], []], "type", "file", "class", "x-file--input", "name", ["subexpr", "@mut", [["get", "name", ["loc", [null, [1, 59], [1, 63]]]]], [], []], "disabled", ["subexpr", "@mut", [["get", "disabled", ["loc", [null, [2, 11], [2, 19]]]]], [], []], "multiple", ["subexpr", "@mut", [["get", "multiple", ["loc", [null, [2, 29], [2, 37]]]]], [], []], "tabindex", ["subexpr", "@mut", [["get", "tabindex", ["loc", [null, [2, 47], [2, 55]]]]], [], []], "accept", ["subexpr", "@mut", [["get", "accept", ["loc", [null, [2, 63], [2, 69]]]]], [], []]], ["loc", [null, [1, 0], [2, 71]]]], ["attribute", "for", ["concat", [["get", "randomId", ["loc", [null, [4, 14], [4, 22]]]]]]], ["block", "if", [["get", "hasBlock", ["loc", [null, [5, 8], [5, 16]]]]], [], 0, 1, ["loc", [null, [5, 2], [9, 9]]]]],
+      locals: [],
+      templates: [child0, child1]
+    };
+  })());
 });
 ;/* jshint ignore:start */
 

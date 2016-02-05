@@ -8465,6 +8465,11 @@ md-backdrop {
   md-backdrop.md-opaque.md-default-theme.ng-leave.md-opaque.md-default-theme.ng-leave-active {
     background-color: rgba(33, 33, 33, 0); }
 
+body {
+  background: #F5F4F3;
+  background-size: contain;
+  font-family: 'Roboto', sans-serif; }
+
 md-toolbar.md-default-theme {
   background-color: #3f51b5;
   color: rgba(255, 255, 255, 0.87);
@@ -8490,6 +8495,7 @@ md-toolbar.md-default-theme {
   width: 400px;
   margin: auto;
   padding: 20px;
+  background: white;
   margin-top: 5%; }
   .login-card md-toolbar.md-default-theme {
     background: white; }
@@ -8521,6 +8527,16 @@ a {
   left: 0; }
 
 .connected {
+  height: 10px;
+  width: 10px;
+  background: #40FF50;
+  border-radius: 50%;
+  /* float: right; */
+  position: absolute;
+  right: 20px;
+  top: 40%; }
+
+.not-connected {
   height: 10px;
   width: 10px;
   background: #FF4040;
@@ -8559,12 +8575,12 @@ a {
 
 .dashboard {
   position: relative;
-  height: 500px;
+  height: 700px;
   width: 70%;
   margin: auto;
   min-width: 1000px;
-  max-width: 1200px;
-  margin-top: 100px; }
+  max-width: 1500px;
+  margin-top: 50px; }
 
 h4 {
   font-size: 11px; }

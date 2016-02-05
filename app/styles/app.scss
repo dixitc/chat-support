@@ -1,4 +1,10 @@
 @import 'ember-paper';
+body {
+    background: #F5F4F3;
+    background-size: contain;
+    font-family: 'Roboto', sans-serif;
+}
+
 md-toolbar.md-default-theme {
     background-color: #3f51b5;
     color: rgba(255, 255, 255, 0.87);
@@ -25,6 +31,7 @@ md-toolbar.md-default-theme {
     width: 400px;
     margin: auto;
     padding: 20px;
+    background: white;
     margin-top: 5%;
     md-toolbar.md-default-theme {
         background: white;
@@ -61,12 +68,22 @@ a {
     /* max-width: 300px; */
     /* margin: 20px; */
     /* min-width: 250px; */
-        left: 0;
+    left: 0;
 }
 
 .connected {
-    
-height: 10px;
+    height: 10px;
+    width: 10px;
+    background: #40FF50;
+    border-radius: 50%;
+    /* float: right; */
+    position: absolute;
+    right: 20px;
+    top: 40%;
+}
+
+.not-connected {
+    height: 10px;
     width: 10px;
     background: #FF4040;
     border-radius: 50%;
@@ -76,8 +93,8 @@ height: 10px;
     top: 40%;
 }
 
-.dash{
-        color: rgba(0, 0, 0, 0.87);
+.dash {
+    color: rgba(0, 0, 0, 0.87);
     background-color: white;
     position: absolute;
     /* right: 0; */
@@ -96,26 +113,24 @@ height: 10px;
     border-radius: 10px;
     right: 20px;
     top: 40%;
-    
 }
 
 .chat-window {
     height: 100%;
     /* max-width: 415px; */
     width: 70%;
-    
     right: 0;
     /* margin-right: 20px; */
 }
 
 .dashboard {
     position: relative;
-    height: 500px;
+    height: 700px;
     width: 70%;
     margin: auto;
     min-width: 1000px;
-    max-width: 1200px;
-    margin-top: 100px;
+    max-width: 1500px;
+    margin-top: 50px;
 }
 
 h4 {
@@ -123,11 +138,11 @@ h4 {
 }
 
 .footer {
-     position: fixed;
+    position: fixed;
     bottom: 0px;
     background: black;
     width: 100%;
-    z-index:1000;
+    z-index: 1000;
     height: 40px;
     background: url('/images/footer_bg.png');
 }

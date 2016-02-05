@@ -363,6 +363,14 @@ define('embtest/components/transition-group', ['exports', 'ember-css-transitions
     }
   });
 });
+define('embtest/components/x-file-input', ['exports', 'emberx-file-input/components/x-file-input'], function (exports, _emberxFileInputComponentsXFileInput) {
+  Object.defineProperty(exports, 'default', {
+    enumerable: true,
+    get: function get() {
+      return _emberxFileInputComponentsXFileInput['default'];
+    }
+  });
+});
 define('embtest/controllers/application', ['exports', 'ember'], function (exports, _ember) {
 	exports['default'] = _ember['default'].Controller.extend({
 		session: _ember['default'].inject.service('session'),
@@ -377,354 +385,435 @@ define('embtest/controllers/array', ['exports', 'ember'], function (exports, _em
   exports['default'] = _ember['default'].Controller;
 });
 define('embtest/controllers/dashboard', ['exports', 'ember'], function (exports, _ember) {
-	exports['default'] = _ember['default'].Controller.extend({
-		socketIOService: _ember['default'].inject.service('socket-io'),
-		listData: _ember['default'].A([]),
-		selectedUser: null,
-		selectedMessages: _ember['default'].computed('selectedUser', function () {
-			if (this.get('selectedUser')) {
+  exports['default'] = _ember['default'].Controller.extend({
+    socketIOService: _ember['default'].inject.service('socket-io'),
+    listData: _ember['default'].A([]),
+    selectedUser: null,
+    selectedMessages: _ember['default'].computed('selectedUser', function () {
+      if (this.get('selectedUser')) {
 
-				console.log(this.listData[this.listData.map(function (e) {
-					return e.who;
-				}).indexOf(this.get('selectedUser'))].msgs);
-				return this.listData[this.listData.map(function (e) {
-					return e.who;
-				}).indexOf(this.get('selectedUser'))].msgs;
-			} else {
-				return [];
-			}
-		}),
-		messagesCount: _ember['default'].computed('listData.@each.msgs', function (data) {
-			return this.get('listData').map(function (chore, index) {
-				console.log(chore);
-				return 'msglength: ' + chore.msgs.length + '!';
-			});
-		}),
+        return this.listData[this.listData.map(function (e) {
+          return e.who;
+        }).indexOf(this.get('selectedUser'))].msgs;
+      } else {
+        return [];
+      }
+    }),
+    messagesCount: _ember['default'].computed('listData.@each.msgs', function (data) {
+      return this.get('listData').map(function (chore, index) {
 
-		init: function init() {
-			this._super.apply(this, arguments);
-			console.log('INIT SOCKET');
-			$(window).keydown(function (e) {
-				// Auto-focus the current input when a key is typed
-				if (event.ctrlKey || event.metaKey || event.altKey) {
-					$('.inputMessage').focus();
-				}
-			});
-			/*
-    * 2) The next step you need to do is to create your actual socketIO.
-    */
-			var socket = this.get('socketIOService').socketFor('http://localhost:3001/');
+        return 'msglength: ' + chore.msgs.length + '!';
+      });
+    }),
 
-			/*
-    * 3) Define any event handlers
-    */
-			socket.on('connect', function () {
-				/*
-     * There are 2 ways to send messages to the server: send and emit
-     */
-				socket.emit('join support', {
-					email: 'support@example.com'
-				});
-			}, this);
+    init: function init() {
+      this._super.apply(this, arguments);
 
-			/*
-    * 4) It is also possible to set event handlers on specific events
-    */
-			socket.on('user message', this.onMessage, this);
+      //USER INTERACTIONS
+      $(window).keydown(function (e) {
+        // Auto-focus the current input when a key is typed
+        if (event.ctrlKey || event.metaKey || event.altKey) {
+          $('.inputMessage').focus();
+        }
+      });
 
-			socket.on('myCustomNamespace', function () {
-				socket.emit('anotherNamespace', 'some data');
-			}, this);
-			//   socket.emit('addsupport' ,{})
-			socket.on("new_msg", function (data) {
-				console.log('new_msg');
-			});
-			socket.on('message received', function (data) {
+      $("input:file").change(function (e) {
 
-				console.log("message received");
-			});
-			socket.on("user message", function (data) {
-				console.log('new ping');
+        //Get the first (and only one) file element
+        //that is included in the original event
+        var file = e.originalEvent.target.files[0],
+            reader = new FileReader();
+        //When the file has been read...
+        reader.onload = function (evt) {
+          //Because of how the file was read,
+          //evt.target.result contains the image in base64 format
+          //Nothing special, just creates an img element
+          //and appends it to the DOM so my UI shows
+          //that I posted an image.
+          //send the image via Socket.io
 
-				socket.emit('userMsg received', data);
-			});
-			var self = this;
-			socket.on('new user', function (data) {
-				self.listData.pushObject(_ember['default'].Object.create({
-					who: data.username,
-					msgs: _ember['default'].A([]),
-					email: data.email,
-					connected: false
-				}));
-				console.log('new user');
-				console.log(data);
-			});
-			socket.on('joined', function (data) {
-				console.log('connected');
-			});
-			socket.on('updatechat', this.updateChat, this);
-			socket.on('support typing', function (data) {
-				console.log('support typing');
-			});
-			// Whenever the server emits 'stop typing', kill the typing message
-			socket.on('stop typing', function (data) {
-				console.log('stop typing');
-			});
-		},
-		updateChat: function updateChat(data1, data2) {
-			console.log(data1);
-			console.log(data2);
-			this.listData[this.listData.map(function (e) {
-				return e.who;
-			}).indexOf(data2)].toggleProperty('connected');
-		},
+          this.sendFile(evt.target.result);
+        };
+        //And now, read the image and base64
+        reader.readAsDataURL(file);
+      });
+      /*
+       * 2) The next step you need to do is to create your actual socketIO.
+       */
+      var socket = this.get('socketIOService').socketFor('http://localhost:3001/');
 
-		onMessage: function onMessage(data) {
-			// This is executed within the ember run loop
-			console.log(data.username);
-			this.listData[this.listData.map(function (e) {
-				return e.who;
-			}).indexOf(data.username)].msgs.pushObject({ msg: data.msg, type: true });
-			console.log(this.listData.map(function (e) {
-				return e.who;
-			}).indexOf(data.username));
-			$('.messages').animate({
-				scrollTop: $('.messages').get(0).scrollHeight }, 100);
-			//alert( data.msg );
-		},
-		actions: {
-			sendMessage: function sendMessage(value) {
-				console.log(value);
-				var message = {};
-				message.msg = value;
-				// Prevent markup from being injected into the message
-				var clientUser = this.listData[this.listData.map(function (e) {
-					return e.who;
-				}).indexOf(this.get('selectedUser'))];
-				console.log(clientUser);
-				var email = clientUser.email;
-				var username = this.get('selectedUser.username');
-				message.userEmail = email;
-				message.username = clientUser.who;
-				console.log(message);
-				//socket.emit('stop typing',message);
-				var socket = this.get('socketIOService').socketFor('http://localhost:3001/');
-				socket.emit('support message', message);
-				$('.inputMessage').val('');
-				clientUser.msgs.pushObject({ msg: message.msg, type: false });
-				$('.messages').animate({
-					scrollTop: $('.messages').get(0).scrollHeight }, 100);
-				//emit support message to selected user email
-			},
-			joinRoom: function joinRoom(item) {
-				console.log(item);
-				item.set('connected', true);
-				console.log(item.get('email'));
-				var socket = this.get('socketIOService').socketFor('http://localhost:3001/');
-				socket.emit('room', {
-					room_name: item.email
-				});
-				this.set('selectedUser', item.who);
-			},
-			testprotectedApi: function testprotectedApi() {
-				var self = this;
-				var user = this.store.createRecord('user', {
-					name: 'asdfasdf',
-					email: 'asdfasdf'
+      /*
+       * 3) Define any event handlers
+       */
+      socket.on('connect', function () {
+        /*
+         * There are 2 ways to send messages to the server: send and emit
+         */
+        socket.emit('join support', {
+          email: 'support@example.com'
+        });
+      }, this);
 
-				});
-			},
-			socketTest: function socketTest() {
-				var socket = io('http://localhost:3001');
-				socket.emit('join support', {
-					email: 'support@example.com'
-				});
-				//   socket.emit('addsupport' ,{})
-				socket.on("new_msg", function (data) {
-					addChatMessage(data);
-				});
-				socket.on('message received', function (data) {
+      /*
+       * 4) It is also possible to set event handlers on specific events
+       */
+      socket.on('user message', this.onMessage, this);
 
-					console.log("message received");
-					console.log(data);
-					var a = $(".message").filter(function () {
-						return $(this).text() === data.msg;
-					});
-					a.children('img').attr('src', 'images/ic_done_black_24px.svg');
-				});
-				socket.on("user message", function (data) {
-					console.log('new ping');
-					data.user = true;
-					var $chatWindow = $(document.getElementById(data.userEmail));
-					if ($chatWindow.length) {
-						addChatMessage(data);
-					} else {
-						generateChatWindow(data);
-					}
-					socket.emit('userMsg received', data);
-				});
-				socket.on('new user', function (data) {
-					socket.emit('room', {
-						room_name: data.email
-					});
-				});
-				socket.on('joined', function (data) {
-					log('connected');
-				});
-				socket.on('updatechat', function (data1, data2) {
-					log(data1);
-					log(data2);
-				});
-				socket.on('support typing', function (data) {
-					addChatTyping(data);
-				});
-				// Whenever the server emits 'stop typing', kill the typing message
-				socket.on('stop typing', function (data) {
-					removeChatTyping(data);
-				});
-			}
-		}
-	});
+      socket.on('myCustomNamespace', function () {
+        socket.emit('anotherNamespace', 'some data');
+      }, this);
+      //   socket.emit('addsupport' ,{})
+      socket.on("new_msg", function (data) {});
+      socket.on('message received', function (data) {});
+      socket.on("user message", function (data) {
+
+        socket.emit('userMsg received', data);
+      });
+      var self = this;
+      socket.on('new user', function (data) {
+        self.listData.pushObject(_ember['default'].Object.create({
+          who: data.username,
+          msgs: _ember['default'].A([]),
+          email: data.email,
+          connected: false,
+          unseenMsgs: 0
+        }));
+      });
+      socket.on('joined', function (data) {});
+      socket.on('updatechat', this.updateChat, this);
+      socket.on('support typing', function (data) {});
+      // Whenever the server emits 'stop typing', kill the typing message
+      socket.on('stop typing', function (data) {});
+    },
+    updateChat: function updateChat(data1, data2) {
+
+      this.listData[this.listData.map(function (e) {
+        return e.who;
+      }).indexOf(data2)].toggleProperty('connected');
+    },
+
+    onMessage: function onMessage(data) {
+      // This is executed within the ember run loop
+      var clientUser = this.listData[this.listData.map(function (e) {
+        return e.who;
+      }).indexOf(data.username)];
+
+      if (data.image) {
+
+        clientUser.msgs.pushObject({
+          msg: data.buffer,
+          type: true,
+          image: true
+        });
+      } else {
+        clientUser.msgs.pushObject({
+          msg: data.msg,
+          type: true
+        });
+        clientUser.incrementProperty('unseenMsgs');
+      }
+      $('.messages').animate({
+        scrollTop: $('.messages').get(0).scrollHeight
+      }, 100);
+      //alert( data.msg );
+    },
+    sendFile: function sendFile(buf) {
+
+      var message = {};
+
+      // Prevent markup from being injected into the message
+      var clientUser = this.listData[this.listData.map(function (e) {
+        return e.who;
+      }).indexOf(this.get('selectedUser'))];
+
+      message.userEmail = clientUser.email;
+      message.buffer = buf;
+      message.image = true;
+      message.username = clientUser.who;
+      clientUser.msgs.pushObject({
+        msg: message.buffer,
+        image: true,
+        type: false
+      });
+      var socket = this.get('socketIOService').socketFor('http://localhost:3001/');
+      socket.emit('support image', message);
+      $('.messages').animate({
+        scrollTop: $('.messages').get(0).scrollHeight
+      }, 100);
+    },
+    actions: {
+      imageBuffer: function imageBuffer(evt) {
+        var self = this;
+
+        //var file = e.originalEvent.target.files[0],
+        var reader = new FileReader();
+        //When the file has been read...
+        reader.onload = function (e) {
+          //Because of how the file was read,
+          //e.target.result contains the image in base64 format
+          //Nothing special, just creates an img element
+          //and appends it to the DOM so my UI shows
+          //that I posted an image.
+          //send the image via Socket.io
+
+          self.sendFile(e.target.result);
+        };
+        //And now, read the image and base64
+        reader.readAsDataURL(evt[0]);
+      },
+      triggerFile: function triggerFile() {
+        $('.x-file--input').trigger('click');
+      },
+      sendMessage: function sendMessage(value) {
+
+        var message = {};
+        message.msg = value;
+        // Prevent markup from being injected into the message
+        var clientUser = this.listData[this.listData.map(function (e) {
+          return e.who;
+        }).indexOf(this.get('selectedUser'))];
+
+        message.userEmail = clientUser.email;
+        message.username = clientUser.who;
+
+        //socket.emit('stop typing',message);
+        var socket = this.get('socketIOService').socketFor('http://localhost:3001/');
+        socket.emit('support message', message);
+        $('.inputMessage').val('');
+        clientUser.msgs.pushObject({
+          msg: message.msg,
+          type: false
+        });
+        $('.messages').animate({
+          scrollTop: $('.messages').get(0).scrollHeight
+        }, 100);
+        //emit support message to selected user email
+      },
+      joinRoom: function joinRoom(item) {
+
+        item.set('connected', true);
+
+        var socket = this.get('socketIOService').socketFor('http://localhost:3001/');
+        socket.emit('room', {
+          room_name: item.email
+        });
+
+        // item.unseenMsgs = 0
+        _ember['default'].set(item, 'unseenMsgs', 0);
+        this.set('selectedUser', item.who);
+        $('.messages').animate({
+          scrollTop: $('.messages').get(0).scrollHeight
+        }, 100);
+      },
+      testprotectedApi: function testprotectedApi() {
+        var self = this;
+        var user = this.store.createRecord('user', {
+          name: 'asdfasdf',
+          email: 'asdfasdf'
+
+        });
+      },
+      socketTest: function socketTest() {
+        var socket = io('http://localhost:3001');
+        socket.emit('join support', {
+          email: 'support@example.com'
+        });
+        //   socket.emit('addsupport' ,{})
+        socket.on("new_msg", function (data) {
+          addChatMessage(data);
+        });
+        socket.on('message received', function (data) {
+
+          var a = $(".message").filter(function () {
+            return $(this).text() === data.msg;
+          });
+          a.children('img').attr('src', 'images/ic_done_black_24px.svg');
+        });
+        socket.on("user message", function (data) {
+
+          data.user = true;
+          var $chatWindow = $(document.getElementById(data.userEmail));
+          if ($chatWindow.length) {
+            addChatMessage(data);
+          } else {
+            generateChatWindow(data);
+          }
+          socket.emit('userMsg received', data);
+        });
+        socket.on('new user', function (data) {
+          socket.emit('room', {
+            room_name: data.email
+          });
+        });
+        socket.on('joined', function (data) {
+          log('connected');
+        });
+        socket.on('updatechat', function (data1, data2) {
+          log(data1);
+          log(data2);
+        });
+        socket.on('support typing', function (data) {
+          addChatTyping(data);
+        });
+        // Whenever the server emits 'stop typing', kill the typing message
+        socket.on('stop typing', function (data) {
+          removeChatTyping(data);
+        });
+      }
+    }
+  });
 });
 define('embtest/controllers/login', ['exports', 'ember'], function (exports, _ember) {
-	exports['default'] = _ember['default'].Controller.extend({
-		session: _ember['default'].inject.service('session'),
-		authenticator: 'authenticator:custom',
-		nameTouched: false,
-		emailTouched: false,
-		numberTouched: false,
-		password1Touched: false,
-		password2Touched: false,
-		signup: false,
-		notLoading: true,
-		login: _ember['default'].computed.not('signup'),
-		user: {
-			name: '',
-			email: '',
-			number: '',
-			password1: '',
-			password2: ''
-		},
-		nameValidation: _ember['default'].computed('user.name', function () {
+  exports['default'] = _ember['default'].Controller.extend({
+    session: _ember['default'].inject.service('session'),
+    authenticator: 'authenticator:custom',
+    nameTouched: false,
+    emailTouched: false,
+    numberTouched: false,
+    password1Touched: false,
+    password2Touched: false,
+    passServerErr: false,
+    signup: false,
+    notLoading: true,
+    login: _ember['default'].computed.not('signup'),
 
-			var name = this.get('user.name');
-			if (_ember['default'].isEmpty(name)) {
-				return "This is required";
-			} else {
-				return "";
-			}
-		}),
-		numberValidation: _ember['default'].computed('user.number', function () {
-			var number = this.get('user.number');
-			console.log(_ember['default'].isEmpty(number));
-			console.log(!isNaN(number));
-			if (_ember['default'].isEmpty(number)) {
-				return "This is required";
-			} else if (isNaN(number)) {
-				return "Use numbers";
-			} else {
-				return "";
-			}
-		}),
-		emailIsEmail: _ember['default'].computed.match('user.email', /^.+@.+\..+$/),
-		passwordsMatchValidation: _ember['default'].computed('user.password1', 'user.password2', function () {
-			if (this.get('user.password1') === this.get('user.password2')) {
-				return "";
-			} else {
-				return "Passwords do not match";
-			}
-		}),
-		passwordValidation: _ember['default'].computed('user.password1', function () {
-			var pass1 = this.get('user.password1');
-			if (pass1.length > 5) {
-				return "";
-			} else {
-				return "Must be at least 5 characters";
-			}
-		}),
-		emailValidation: _ember['default'].computed('user.email', function () {
-			var email = this.get('user.email');
-			if (email.match(/^.+@.+\..+$/)) {
-				return "";
-			} else {
-				return "Please provide email in valid format";
-			}
-		}),
-		actions: {
-			validate: function validate() {
-				//method called before register or submit
-				var user = this.get('user');
-				this.set('notLoading', false);
+    user: {
+      name: '',
+      email: '',
+      number: '',
+      password1: '',
+      password2: ''
+    },
+    nameValidation: _ember['default'].computed('user.name', function () {
 
-				this.toggleProperty('nameTouched');
-				this.toggleProperty('emailTouched');
-				this.toggleProperty('numberTouched');
-				this.toggleProperty('password1Touched');
-				this.toggleProperty('password2Touched');
-			},
-			clearForm: function clearForm() {
-				//method called on toggling signup/login
-				if (this.get('nameTouched')) {}
-				this.set('user.name', '');
-				this.set('user.email', '');
-				this.set('user.number', '');
-				this.set('user.password1', '');
-				this.set('user.password2', '');
-				if (this.get('nameTouched')) {
-					this.toggleProperty('nameTouched');
-				}
-				if (this.get('emailTouched')) {
-					this.toggleProperty('emailTouched');
-				}
-				if (this.get('numberTouched')) {
-					this.toggleProperty('numberTouched');
-				}
-				if (this.get('password1Touched')) {
-					this.toggleProperty('password1Touched');
-				}
-				if (this.get('password2Touched')) {
-					this.toggleProperty('password2Touched');
-				}
-			},
-			authenticate: function authenticate() {
-				var _this = this;
+      var name = this.get('user.name');
+      if (_ember['default'].isEmpty(name)) {
+        return "This is required";
+      } else {
+        return "";
+      }
+    }),
+    numberValidation: _ember['default'].computed('user.number', function () {
+      var number = this.get('user.number');
+      console.log(_ember['default'].isEmpty(number));
+      console.log(!isNaN(number));
+      if (_ember['default'].isEmpty(number)) {
+        return "This is required";
+      } else if (isNaN(number)) {
+        return "Use numbers";
+      } else {
+        return "";
+      }
+    }),
+    emailIsEmail: _ember['default'].computed.match('user.email', /^.+@.+\..+$/),
+    passwordsMatchValidation: _ember['default'].computed('user.password1', 'user.password2', function () {
+      if (this.get('user.password1') === this.get('user.password2')) {
+        return "";
+      } else {
+        return "Passwords do not match";
+      }
+    }),
+    passwordValidation: _ember['default'].computed('user.password1', 'passServerErr', function () {
+      var pass1 = this.get('user.password1');
+      if (pass1.length > 5) {
+        if (this.get('passServerErr')) {
+          return "Invalid password";
+        } else {
 
-				this.send('validate');
-				var credentials = this.getProperties('user.name', 'user.password1');
-				var self = this;
-				this.get('session').authenticate('authenticator:custom', {
-					name: self.get('user.name'),
-					password: self.get('user.password1')
-				})['catch'](function (message) {
-					_this.set('errorMessage', message);
-				});
-			},
-			togglesignup: function togglesignup() {
+          return "";
+        }
+      } else {
+        return "Must be at least 5 characters";
+      }
+    }),
+    emailValidation: _ember['default'].computed('user.email', function () {
+      var email = this.get('user.email');
+      if (email.match(/^.+@.+\..+$/)) {
+        return "";
+      } else {
+        return "Please provide email in valid format";
+      }
+    }),
+    actions: {
+      validate: function validate() {
+        //method called before register or submit
+        var user = this.get('user');
+        this.set('notLoading', false);
 
-				this.toggleProperty('signup');
-				this.send('clearForm');
-			},
-			registerUser: function registerUser() {
-				this.send('validate');
-				var self = this;
-				var user = this.store.createRecord('user', {
-					name: this.get('user.name'),
-					email: this.get('user.email')
-				});
-				user.set('number', this.get('user.number'));
-				user.set('password', this.get('user.password1'));
-				user.save().then(function () {
-					//this is basically what happens when you trigger the LoginControllerMixin's "authenticate" action
-					self.get('session').authenticate('authenticator:custom', {
-						name: self.get('user.name'),
-						password: self.get('user.password1')
-					})['catch'](function (message) {
-						self.set('errorMessage', message);
-					});
-				});
-			}
-		}
-	});
+        this.toggleProperty('nameTouched');
+        this.toggleProperty('emailTouched');
+        this.toggleProperty('numberTouched');
+        this.toggleProperty('password1Touched');
+        this.toggleProperty('password2Touched');
+      },
+      clearForm: function clearForm() {
+        //method called on toggling signup/login
+        if (this.get('nameTouched')) {}
+        this.set('user.name', '');
+        this.set('user.email', '');
+        this.set('user.number', '');
+        this.set('user.password1', '');
+        this.set('user.password2', '');
+        if (this.get('nameTouched')) {
+          this.toggleProperty('nameTouched');
+        }
+        if (this.get('emailTouched')) {
+          this.toggleProperty('emailTouched');
+        }
+        if (this.get('numberTouched')) {
+          this.toggleProperty('numberTouched');
+        }
+        if (this.get('password1Touched')) {
+          this.toggleProperty('password1Touched');
+        }
+        if (this.get('password2Touched')) {
+          this.toggleProperty('password2Touched');
+        }
+      },
+      authenticate: function authenticate() {
+        var _this = this;
+
+        this.send('validate');
+        var credentials = this.getProperties('user.name', 'user.password1');
+        var self = this;
+        this.get('session').authenticate('authenticator:custom', {
+          name: self.get('user.name'),
+          password: self.get('user.password1')
+        })['catch'](function (message) {
+          console.log('authentication failed');
+          _this.set('passServerErr', true);
+          _this.toggleProperty('password1Touched');
+          _this.set('notLoading', true);
+          //this.set('user.password1','');
+          _this.set('errorMessage', message);
+        });
+      },
+      togglesignup: function togglesignup() {
+
+        this.toggleProperty('signup');
+        this.send('clearForm');
+      },
+      registerUser: function registerUser() {
+        this.send('validate');
+        var self = this;
+        var user = this.store.createRecord('user', {
+          name: this.get('user.name'),
+          email: this.get('user.email')
+        });
+        user.set('number', this.get('user.number'));
+        user.set('password', this.get('user.password1'));
+        user.save().then(function () {
+          //this is basically what happens when you trigger the LoginControllerMixin's "authenticate" action
+          self.get('session').authenticate('authenticator:custom', {
+            name: self.get('user.name'),
+            password: self.get('user.password1')
+          })['catch'](function (message) {
+            self.set('errorMessage', message);
+          });
+        });
+      }
+    }
+  });
 });
 define('embtest/controllers/object', ['exports', 'ember'], function (exports, _ember) {
   exports['default'] = _ember['default'].Controller;
@@ -6330,11 +6419,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           "loc": {
             "source": null,
             "start": {
-              "line": 289,
+              "line": 330,
               "column": 0
             },
             "end": {
-              "line": 289,
+              "line": 330,
               "column": 130
             }
           },
@@ -6366,11 +6455,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           "loc": {
             "source": null,
             "start": {
-              "line": 290,
+              "line": 331,
               "column": 0
             },
             "end": {
-              "line": 290,
+              "line": 331,
               "column": 128
             }
           },
@@ -6398,6 +6487,99 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
       var child0 = (function () {
         var child0 = (function () {
           var child0 = (function () {
+            var child0 = (function () {
+              return {
+                meta: {
+                  "fragmentReason": false,
+                  "revision": "Ember@2.3.0",
+                  "loc": {
+                    "source": null,
+                    "start": {
+                      "line": 349,
+                      "column": 22
+                    },
+                    "end": {
+                      "line": 351,
+                      "column": 22
+                    }
+                  },
+                  "moduleName": "embtest/templates/dashboard.hbs"
+                },
+                isEmpty: false,
+                arity: 0,
+                cachedFragment: null,
+                hasRendered: false,
+                buildFragment: function buildFragment(dom) {
+                  var el0 = dom.createDocumentFragment();
+                  var el1 = dom.createTextNode("                        ");
+                  dom.appendChild(el0, el1);
+                  var el1 = dom.createElement("img");
+                  dom.setAttribute(el1, "class", "chatImage");
+                  dom.appendChild(el0, el1);
+                  var el1 = dom.createTextNode("\n");
+                  dom.appendChild(el0, el1);
+                  return el0;
+                },
+                buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+                  var element2 = dom.childAt(fragment, [1]);
+                  var morphs = new Array(1);
+                  morphs[0] = dom.createAttrMorph(element2, 'src');
+                  return morphs;
+                },
+                statements: [["attribute", "src", ["get", "msg.msg", ["loc", [null, [350, 36], [350, 43]]]]]],
+                locals: [],
+                templates: []
+              };
+            })();
+            var child1 = (function () {
+              return {
+                meta: {
+                  "fragmentReason": false,
+                  "revision": "Ember@2.3.0",
+                  "loc": {
+                    "source": null,
+                    "start": {
+                      "line": 351,
+                      "column": 22
+                    },
+                    "end": {
+                      "line": 355,
+                      "column": 22
+                    }
+                  },
+                  "moduleName": "embtest/templates/dashboard.hbs"
+                },
+                isEmpty: false,
+                arity: 0,
+                cachedFragment: null,
+                hasRendered: false,
+                buildFragment: function buildFragment(dom) {
+                  var el0 = dom.createDocumentFragment();
+                  var el1 = dom.createTextNode("                        ");
+                  dom.appendChild(el0, el1);
+                  var el1 = dom.createElement("span");
+                  dom.setAttribute(el1, "class", "messageBody");
+                  var el2 = dom.createTextNode("\n										");
+                  dom.appendChild(el1, el2);
+                  var el2 = dom.createComment("");
+                  dom.appendChild(el1, el2);
+                  var el2 = dom.createTextNode("\n									");
+                  dom.appendChild(el1, el2);
+                  dom.appendChild(el0, el1);
+                  var el1 = dom.createTextNode("\n");
+                  dom.appendChild(el0, el1);
+                  return el0;
+                },
+                buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+                  var morphs = new Array(1);
+                  morphs[0] = dom.createMorphAt(dom.childAt(fragment, [1]), 1, 1);
+                  return morphs;
+                },
+                statements: [["content", "msg.msg", ["loc", [null, [353, 10], [353, 21]]]]],
+                locals: [],
+                templates: []
+              };
+            })();
             return {
               meta: {
                 "fragmentReason": false,
@@ -6405,12 +6587,12 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                 "loc": {
                   "source": null,
                   "start": {
-                    "line": 307,
-                    "column": 6
+                    "line": 346,
+                    "column": 16
                   },
                   "end": {
-                    "line": 316,
-                    "column": 6
+                    "line": 358,
+                    "column": 16
                   }
                 },
                 "moduleName": "embtest/templates/dashboard.hbs"
@@ -6421,27 +6603,20 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
               hasRendered: false,
               buildFragment: function buildFragment(dom) {
                 var el0 = dom.createDocumentFragment();
-                var el1 = dom.createTextNode("							");
+                var el1 = dom.createTextNode("                  ");
                 dom.appendChild(el0, el1);
                 var el1 = dom.createElement("li");
-                var el2 = dom.createTextNode("\n								\n								");
+                var el2 = dom.createTextNode("\n                    ");
                 dom.appendChild(el1, el2);
                 var el2 = dom.createElement("div");
-                var el3 = dom.createTextNode("\n									");
+                var el3 = dom.createTextNode("\n");
                 dom.appendChild(el2, el3);
-                var el3 = dom.createElement("span");
-                dom.setAttribute(el3, "class", "messageBody");
-                var el4 = dom.createTextNode("\n										");
-                dom.appendChild(el3, el4);
-                var el4 = dom.createComment("");
-                dom.appendChild(el3, el4);
-                var el4 = dom.createTextNode("\n									");
-                dom.appendChild(el3, el4);
+                var el3 = dom.createComment("");
                 dom.appendChild(el2, el3);
-                var el3 = dom.createTextNode("\n								");
+                var el3 = dom.createTextNode("                    ");
                 dom.appendChild(el2, el3);
                 dom.appendChild(el1, el2);
-                var el2 = dom.createTextNode("\n							");
+                var el2 = dom.createTextNode("\n                  ");
                 dom.appendChild(el1, el2);
                 dom.appendChild(el0, el1);
                 var el1 = dom.createTextNode("\n");
@@ -6449,17 +6624,17 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                 return el0;
               },
               buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-                var element1 = dom.childAt(fragment, [1]);
-                var element2 = dom.childAt(element1, [1]);
+                var element3 = dom.childAt(fragment, [1]);
+                var element4 = dom.childAt(element3, [1]);
                 var morphs = new Array(3);
-                morphs[0] = dom.createAttrMorph(element1, 'class');
-                morphs[1] = dom.createAttrMorph(element2, 'class');
-                morphs[2] = dom.createMorphAt(dom.childAt(element2, [1]), 1, 1);
+                morphs[0] = dom.createAttrMorph(element3, 'class');
+                morphs[1] = dom.createAttrMorph(element4, 'class');
+                morphs[2] = dom.createMorphAt(element4, 1, 1);
                 return morphs;
               },
-              statements: [["attribute", "class", ["concat", ["messageLi  ", ["subexpr", "if", [["get", "msg.type", ["loc", [null, [308, 34], [308, 42]]]], "lileft", ""], [], ["loc", [null, [308, 29], [308, 56]]]]]]], ["attribute", "class", ["concat", ["rightbubble message  ", ["subexpr", "if", [["get", "msg.type", ["loc", [null, [310, 46], [310, 54]]]], "leftbubble", ""], [], ["loc", [null, [310, 41], [310, 72]]]]]]], ["content", "msg.msg", ["loc", [null, [312, 10], [312, 21]]]]],
+              statements: [["attribute", "class", ["concat", ["messageLi\t", ["subexpr", "if", [["get", "msg.type", ["loc", [null, [347, 44], [347, 52]]]], "lileft", ""], [], ["loc", [null, [347, 39], [347, 66]]]]]]], ["attribute", "class", ["concat", ["rightbubble message\t", ["subexpr", "if", [["get", "msg.type", ["loc", [null, [348, 57], [348, 65]]]], "leftbubble", ""], [], ["loc", [null, [348, 52], [348, 83]]]], " ", ["subexpr", "if", [["get", "msg.image", ["loc", [null, [348, 89], [348, 98]]]], "imagebubble", ""], [], ["loc", [null, [348, 84], [348, 117]]]]]]], ["block", "if", [["get", "msg.image", ["loc", [null, [349, 28], [349, 37]]]]], [], 0, 1, ["loc", [null, [349, 22], [355, 29]]]]],
               locals: ["msg"],
-              templates: []
+              templates: [child0, child1]
             };
           })();
           return {
@@ -6469,12 +6644,12 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
               "loc": {
                 "source": null,
                 "start": {
-                  "line": 306,
-                  "column": 5
+                  "line": 345,
+                  "column": 14
                 },
                 "end": {
-                  "line": 317,
-                  "column": 6
+                  "line": 359,
+                  "column": 14
                 }
               },
               "moduleName": "embtest/templates/dashboard.hbs"
@@ -6496,7 +6671,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
               dom.insertBoundary(fragment, null);
               return morphs;
             },
-            statements: [["block", "each", [["get", "selectedMessages", ["loc", [null, [307, 14], [307, 30]]]]], [], 0, null, ["loc", [null, [307, 6], [316, 15]]]]],
+            statements: [["block", "each", [["get", "selectedMessages", ["loc", [null, [346, 24], [346, 40]]]]], [], 0, null, ["loc", [null, [346, 16], [358, 25]]]]],
             locals: [],
             templates: [child0]
           };
@@ -6509,12 +6684,12 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
               "loc": {
                 "source": null,
                 "start": {
-                  "line": 317,
-                  "column": 6
+                  "line": 359,
+                  "column": 14
                 },
                 "end": {
-                  "line": 323,
-                  "column": 6
+                  "line": 365,
+                  "column": 14
                 }
               },
               "moduleName": "embtest/templates/dashboard.hbs"
@@ -6525,19 +6700,19 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             hasRendered: false,
             buildFragment: function buildFragment(dom) {
               var el0 = dom.createDocumentFragment();
-              var el1 = dom.createTextNode("						");
+              var el1 = dom.createTextNode("                ");
               dom.appendChild(el0, el1);
               var el1 = dom.createElement("li");
               dom.setAttribute(el1, "class", "log");
               dom.setAttribute(el1, "style", "display: list-item;");
-              var el2 = dom.createTextNode("\n						");
+              var el2 = dom.createTextNode("\n                  ");
               dom.appendChild(el1, el2);
               var el2 = dom.createElement("span");
               dom.setAttribute(el2, "class", "logText");
               var el3 = dom.createTextNode("\n							No Messages\n						");
               dom.appendChild(el2, el3);
               dom.appendChild(el1, el2);
-              var el2 = dom.createTextNode("\n					");
+              var el2 = dom.createTextNode("\n                ");
               dom.appendChild(el1, el2);
               dom.appendChild(el0, el1);
               var el1 = dom.createTextNode("\n");
@@ -6559,12 +6734,12 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             "loc": {
               "source": null,
               "start": {
-                "line": 300,
-                "column": 5
+                "line": 339,
+                "column": 12
               },
               "end": {
-                "line": 324,
-                "column": 5
+                "line": 366,
+                "column": 12
               }
             },
             "moduleName": "embtest/templates/dashboard.hbs"
@@ -6575,19 +6750,19 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           hasRendered: false,
           buildFragment: function buildFragment(dom) {
             var el0 = dom.createDocumentFragment();
-            var el1 = dom.createTextNode("											");
+            var el1 = dom.createTextNode("              ");
             dom.appendChild(el0, el1);
             var el1 = dom.createElement("li");
             dom.setAttribute(el1, "class", "log");
             dom.setAttribute(el1, "style", "display: list-item;");
-            var el2 = dom.createTextNode("\n						");
+            var el2 = dom.createTextNode("\n                ");
             dom.appendChild(el1, el2);
             var el2 = dom.createElement("span");
             dom.setAttribute(el2, "class", "logText");
             var el3 = dom.createTextNode("\n							Connected\n						");
             dom.appendChild(el2, el3);
             dom.appendChild(el1, el2);
-            var el2 = dom.createTextNode("\n					");
+            var el2 = dom.createTextNode("\n              ");
             dom.appendChild(el1, el2);
             dom.appendChild(el0, el1);
             var el1 = dom.createTextNode("\n");
@@ -6602,7 +6777,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             dom.insertBoundary(fragment, null);
             return morphs;
           },
-          statements: [["block", "if", [["get", "selectedMessages", ["loc", [null, [306, 11], [306, 27]]]]], [], 0, 1, ["loc", [null, [306, 5], [323, 13]]]]],
+          statements: [["block", "if", [["get", "selectedMessages", ["loc", [null, [345, 20], [345, 36]]]]], [], 0, 1, ["loc", [null, [345, 14], [365, 21]]]]],
           locals: [],
           templates: [child0, child1]
         };
@@ -6615,12 +6790,12 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             "loc": {
               "source": null,
               "start": {
-                "line": 324,
-                "column": 5
+                "line": 366,
+                "column": 12
               },
               "end": {
-                "line": 330,
-                "column": 5
+                "line": 372,
+                "column": 12
               }
             },
             "moduleName": "embtest/templates/dashboard.hbs"
@@ -6631,19 +6806,19 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           hasRendered: false,
           buildFragment: function buildFragment(dom) {
             var el0 = dom.createDocumentFragment();
-            var el1 = dom.createTextNode("					");
+            var el1 = dom.createTextNode("              ");
             dom.appendChild(el0, el1);
             var el1 = dom.createElement("li");
             dom.setAttribute(el1, "class", "log");
             dom.setAttribute(el1, "style", "display: list-item;");
-            var el2 = dom.createTextNode("\n						");
+            var el2 = dom.createTextNode("\n                ");
             dom.appendChild(el1, el2);
             var el2 = dom.createElement("span");
             dom.setAttribute(el2, "class", "logText");
-            var el3 = dom.createTextNode("\n							No Users\n						");
+            var el3 = dom.createTextNode("\n							Not connected\n						");
             dom.appendChild(el2, el3);
             dom.appendChild(el1, el2);
-            var el2 = dom.createTextNode("\n					");
+            var el2 = dom.createTextNode("\n              ");
             dom.appendChild(el1, el2);
             dom.appendChild(el0, el1);
             var el1 = dom.createTextNode("\n");
@@ -6666,12 +6841,12 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             "loc": {
               "source": null,
               "start": {
-                "line": 333,
-                "column": 3
+                "line": 375,
+                "column": 8
               },
               "end": {
-                "line": 340,
-                "column": 3
+                "line": 384,
+                "column": 8
               }
             },
             "moduleName": "embtest/templates/dashboard.hbs"
@@ -6682,26 +6857,31 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           hasRendered: false,
           buildFragment: function buildFragment(dom) {
             var el0 = dom.createDocumentFragment();
-            var el1 = dom.createTextNode("			");
+            var el1 = dom.createTextNode("          ");
             dom.appendChild(el0, el1);
             var el1 = dom.createElement("div");
             dom.setAttribute(el1, "class", "inputbubble");
-            var el2 = dom.createTextNode("\n				");
-            dom.appendChild(el1, el2);
-            var el2 = dom.createElement("input");
-            dom.appendChild(el1, el2);
-            var el2 = dom.createTextNode("\n				");
+            var el2 = dom.createTextNode("\n            ");
             dom.appendChild(el1, el2);
             var el2 = dom.createComment("");
             dom.appendChild(el1, el2);
-            var el2 = dom.createTextNode("\n			");
+            var el2 = dom.createTextNode("\n          ");
             dom.appendChild(el1, el2);
             dom.appendChild(el0, el1);
-            var el1 = dom.createTextNode("\n			");
+            var el1 = dom.createTextNode("\n\n          ");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createComment("");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createTextNode("\n          ");
             dom.appendChild(el0, el1);
             var el1 = dom.createElement("div");
             dom.setAttribute(el1, "class", "fileDiv");
-            var el2 = dom.createTextNode("\n			");
+            var el2 = dom.createTextNode("\n            ");
+            dom.appendChild(el1, el2);
+            var el2 = dom.createElement("img");
+            dom.setAttribute(el2, "src", "/images/ic_attachment_black_24dp_2x.png");
+            dom.appendChild(el1, el2);
+            var el2 = dom.createTextNode("\n          ");
             dom.appendChild(el1, el2);
             dom.appendChild(el0, el1);
             var el1 = dom.createTextNode("\n");
@@ -6709,11 +6889,14 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             return el0;
           },
           buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-            var morphs = new Array(1);
-            morphs[0] = dom.createMorphAt(dom.childAt(fragment, [1]), 3, 3);
+            var element1 = dom.childAt(fragment, [5]);
+            var morphs = new Array(3);
+            morphs[0] = dom.createMorphAt(dom.childAt(fragment, [1]), 1, 1);
+            morphs[1] = dom.createMorphAt(fragment, 3, 3, contextualElement);
+            morphs[2] = dom.createElementMorph(element1);
             return morphs;
           },
-          statements: [["inline", "input", [], ["value", ["subexpr", "@mut", [["get", "firstName", ["loc", [null, [336, 18], [336, 27]]]]], [], []], "class", "inputMessage", "placeholder", "Type a message", "enter", "sendMessage"], ["loc", [null, [336, 4], [336, 99]]]]],
+          statements: [["inline", "input", [], ["value", ["subexpr", "@mut", [["get", "firstName", ["loc", [null, [377, 26], [377, 35]]]]], [], []], "class", "inputMessage", "placeholder", "Type a message", "enter", "sendMessage"], ["loc", [null, [377, 12], [377, 107]]]], ["inline", "x-file-input", [], ["name", "files", "multiple", false, "action", ["subexpr", "action", ["imageBuffer"], [], ["loc", [null, [380, 60], [380, 82]]]], "alt", "Choose a File"], ["loc", [null, [380, 10], [380, 104]]]], ["element", "action", ["triggerFile"], [], ["loc", [null, [381, 31], [381, 55]]]]],
           locals: [],
           templates: []
         };
@@ -6725,12 +6908,12 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           "loc": {
             "source": null,
             "start": {
-              "line": 295,
-              "column": 1
+              "line": 334,
+              "column": 2
             },
             "end": {
-              "line": 343,
-              "column": 1
+              "line": 387,
+              "column": 2
             }
           },
           "moduleName": "embtest/templates/dashboard.hbs"
@@ -6741,19 +6924,19 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
         hasRendered: false,
         buildFragment: function buildFragment(dom) {
           var el0 = dom.createDocumentFragment();
-          var el1 = dom.createTextNode("	");
+          var el1 = dom.createTextNode("    ");
           dom.appendChild(el0, el1);
           var el1 = dom.createElement("ul");
           dom.setAttribute(el1, "class", "pages");
-          var el2 = dom.createTextNode("\n		");
+          var el2 = dom.createTextNode("\n      ");
           dom.appendChild(el1, el2);
           var el2 = dom.createElement("li");
           dom.setAttribute(el2, "class", "chat page");
-          var el3 = dom.createTextNode("\n			");
+          var el3 = dom.createTextNode("\n        ");
           dom.appendChild(el2, el3);
           var el3 = dom.createElement("div");
           dom.setAttribute(el3, "class", "chatArea");
-          var el4 = dom.createTextNode("\n				");
+          var el4 = dom.createTextNode("\n          ");
           dom.appendChild(el3, el4);
           var el4 = dom.createElement("ul");
           dom.setAttribute(el4, "class", "messages");
@@ -6761,20 +6944,20 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           dom.appendChild(el4, el5);
           var el5 = dom.createComment("");
           dom.appendChild(el4, el5);
-          var el5 = dom.createTextNode("				");
+          var el5 = dom.createTextNode("          ");
           dom.appendChild(el4, el5);
           dom.appendChild(el3, el4);
-          var el4 = dom.createTextNode("\n			");
+          var el4 = dom.createTextNode("\n        ");
           dom.appendChild(el3, el4);
           dom.appendChild(el2, el3);
           var el3 = dom.createTextNode("\n");
           dom.appendChild(el2, el3);
           var el3 = dom.createComment("");
           dom.appendChild(el2, el3);
-          var el3 = dom.createTextNode("		");
+          var el3 = dom.createTextNode("      ");
           dom.appendChild(el2, el3);
           dom.appendChild(el1, el2);
-          var el2 = dom.createTextNode("\n	");
+          var el2 = dom.createTextNode("\n    ");
           dom.appendChild(el1, el2);
           dom.appendChild(el0, el1);
           var el1 = dom.createTextNode("\n");
@@ -6782,13 +6965,13 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           return el0;
         },
         buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-          var element3 = dom.childAt(fragment, [1, 1]);
+          var element5 = dom.childAt(fragment, [1, 1]);
           var morphs = new Array(2);
-          morphs[0] = dom.createMorphAt(dom.childAt(element3, [1, 1]), 1, 1);
-          morphs[1] = dom.createMorphAt(element3, 3, 3);
+          morphs[0] = dom.createMorphAt(dom.childAt(element5, [1, 1]), 1, 1);
+          morphs[1] = dom.createMorphAt(element5, 3, 3);
           return morphs;
         },
-        statements: [["block", "if", [["get", "selectedUser", ["loc", [null, [300, 11], [300, 23]]]]], [], 0, 1, ["loc", [null, [300, 5], [330, 12]]]], ["block", "if", [["get", "selectedUser", ["loc", [null, [333, 9], [333, 21]]]]], [], 2, null, ["loc", [null, [333, 3], [340, 10]]]]],
+        statements: [["block", "if", [["get", "selectedUser", ["loc", [null, [339, 18], [339, 30]]]]], [], 0, 1, ["loc", [null, [339, 12], [372, 19]]]], ["block", "if", [["get", "selectedUser", ["loc", [null, [375, 14], [375, 26]]]]], [], 2, null, ["loc", [null, [375, 8], [384, 15]]]]],
         locals: [],
         templates: [child0, child1, child2]
       };
@@ -6799,6 +6982,98 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           var child0 = (function () {
             var child0 = (function () {
               var child0 = (function () {
+                var child0 = (function () {
+                  return {
+                    meta: {
+                      "fragmentReason": false,
+                      "revision": "Ember@2.3.0",
+                      "loc": {
+                        "source": null,
+                        "start": {
+                          "line": 403,
+                          "column": 14
+                        },
+                        "end": {
+                          "line": 407,
+                          "column": 16
+                        }
+                      },
+                      "moduleName": "embtest/templates/dashboard.hbs"
+                    },
+                    isEmpty: false,
+                    arity: 0,
+                    cachedFragment: null,
+                    hasRendered: false,
+                    buildFragment: function buildFragment(dom) {
+                      var el0 = dom.createDocumentFragment();
+                      var el1 = dom.createTextNode("                ");
+                      dom.appendChild(el0, el1);
+                      var el1 = dom.createElement("div");
+                      dom.setAttribute(el1, "class", "countDiv");
+                      var el2 = dom.createTextNode("\n                  ");
+                      dom.appendChild(el1, el2);
+                      var el2 = dom.createComment("");
+                      dom.appendChild(el1, el2);
+                      var el2 = dom.createTextNode("\n                ");
+                      dom.appendChild(el1, el2);
+                      dom.appendChild(el0, el1);
+                      var el1 = dom.createTextNode("\n");
+                      dom.appendChild(el0, el1);
+                      return el0;
+                    },
+                    buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+                      var morphs = new Array(1);
+                      morphs[0] = dom.createMorphAt(dom.childAt(fragment, [1]), 1, 1);
+                      return morphs;
+                    },
+                    statements: [["content", "item.unseenMsgs", ["loc", [null, [405, 18], [405, 37]]]]],
+                    locals: [],
+                    templates: []
+                  };
+                })();
+                var child1 = (function () {
+                  return {
+                    meta: {
+                      "fragmentReason": false,
+                      "revision": "Ember@2.3.0",
+                      "loc": {
+                        "source": null,
+                        "start": {
+                          "line": 407,
+                          "column": 16
+                        },
+                        "end": {
+                          "line": 410,
+                          "column": 14
+                        }
+                      },
+                      "moduleName": "embtest/templates/dashboard.hbs"
+                    },
+                    isEmpty: false,
+                    arity: 0,
+                    cachedFragment: null,
+                    hasRendered: false,
+                    buildFragment: function buildFragment(dom) {
+                      var el0 = dom.createDocumentFragment();
+                      var el1 = dom.createTextNode("                ");
+                      dom.appendChild(el0, el1);
+                      var el1 = dom.createElement("div");
+                      dom.setAttribute(el1, "class", "connected");
+                      var el2 = dom.createTextNode("\n                ");
+                      dom.appendChild(el1, el2);
+                      dom.appendChild(el0, el1);
+                      var el1 = dom.createTextNode("\n");
+                      dom.appendChild(el0, el1);
+                      return el0;
+                    },
+                    buildRenderNodes: function buildRenderNodes() {
+                      return [];
+                    },
+                    statements: [],
+                    locals: [],
+                    templates: []
+                  };
+                })();
                 return {
                   meta: {
                     "fragmentReason": false,
@@ -6806,12 +7081,12 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                     "loc": {
                       "source": null,
                       "start": {
-                        "line": 359,
-                        "column": 5
+                        "line": 401,
+                        "column": 12
                       },
                       "end": {
-                        "line": 363,
-                        "column": 5
+                        "line": 411,
+                        "column": 12
                       }
                     },
                     "moduleName": "embtest/templates/dashboard.hbs"
@@ -6822,29 +7097,21 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                   hasRendered: false,
                   buildFragment: function buildFragment(dom) {
                     var el0 = dom.createDocumentFragment();
-                    var el1 = dom.createTextNode("						");
-                    dom.appendChild(el0, el1);
-                    var el1 = dom.createElement("div");
-                    dom.setAttribute(el1, "class", "countDiv");
-                    var el2 = dom.createTextNode("\n							");
-                    dom.appendChild(el1, el2);
-                    var el2 = dom.createComment("");
-                    dom.appendChild(el1, el2);
-                    var el2 = dom.createTextNode("\n						");
-                    dom.appendChild(el1, el2);
-                    dom.appendChild(el0, el1);
                     var el1 = dom.createTextNode("\n");
+                    dom.appendChild(el0, el1);
+                    var el1 = dom.createComment("");
                     dom.appendChild(el0, el1);
                     return el0;
                   },
                   buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
                     var morphs = new Array(1);
-                    morphs[0] = dom.createMorphAt(dom.childAt(fragment, [1]), 1, 1);
+                    morphs[0] = dom.createMorphAt(fragment, 1, 1, contextualElement);
+                    dom.insertBoundary(fragment, null);
                     return morphs;
                   },
-                  statements: [["content", "item.msgs.length", ["loc", [null, [361, 7], [361, 27]]]]],
+                  statements: [["block", "if", [["get", "item.unseenMsgs", ["loc", [null, [403, 20], [403, 35]]]]], [], 0, 1, ["loc", [null, [403, 14], [410, 21]]]]],
                   locals: [],
-                  templates: []
+                  templates: [child0, child1]
                 };
               })();
               var child1 = (function () {
@@ -6855,12 +7122,12 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                     "loc": {
                       "source": null,
                       "start": {
-                        "line": 363,
-                        "column": 5
+                        "line": 411,
+                        "column": 12
                       },
                       "end": {
-                        "line": 367,
-                        "column": 5
+                        "line": 414,
+                        "column": 12
                       }
                     },
                     "moduleName": "embtest/templates/dashboard.hbs"
@@ -6871,11 +7138,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                   hasRendered: false,
                   buildFragment: function buildFragment(dom) {
                     var el0 = dom.createDocumentFragment();
-                    var el1 = dom.createTextNode("					");
+                    var el1 = dom.createTextNode("              ");
                     dom.appendChild(el0, el1);
                     var el1 = dom.createElement("div");
-                    dom.setAttribute(el1, "class", "connected");
-                    var el2 = dom.createTextNode("\n						\n					");
+                    dom.setAttribute(el1, "class", "not-connected");
+                    var el2 = dom.createTextNode("\n              ");
                     dom.appendChild(el1, el2);
                     dom.appendChild(el0, el1);
                     var el1 = dom.createTextNode("\n");
@@ -6897,12 +7164,12 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                   "loc": {
                     "source": null,
                     "start": {
-                      "line": 350,
-                      "column": 3
+                      "line": 392,
+                      "column": 10
                     },
                     "end": {
-                      "line": 368,
-                      "column": 3
+                      "line": 415,
+                      "column": 10
                     }
                   },
                   "moduleName": "embtest/templates/dashboard.hbs"
@@ -6913,11 +7180,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                 hasRendered: false,
                 buildFragment: function buildFragment(dom) {
                   var el0 = dom.createDocumentFragment();
-                  var el1 = dom.createTextNode("				");
+                  var el1 = dom.createTextNode("            ");
                   dom.appendChild(el0, el1);
                   var el1 = dom.createElement("div");
                   dom.setAttribute(el1, "class", "md-list-item-text");
-                  var el2 = dom.createTextNode("\n					");
+                  var el2 = dom.createTextNode("\n              ");
                   dom.appendChild(el1, el2);
                   var el2 = dom.createElement("h3");
                   var el3 = dom.createTextNode("\n						");
@@ -6927,7 +7194,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                   var el3 = dom.createTextNode("\n					");
                   dom.appendChild(el2, el3);
                   dom.appendChild(el1, el2);
-                  var el2 = dom.createTextNode("\n					");
+                  var el2 = dom.createTextNode("\n              ");
                   dom.appendChild(el1, el2);
                   var el2 = dom.createElement("h4");
                   var el3 = dom.createTextNode("\n						");
@@ -6937,7 +7204,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                   var el3 = dom.createTextNode("\n					");
                   dom.appendChild(el2, el3);
                   dom.appendChild(el1, el2);
-                  var el2 = dom.createTextNode("\n				");
+                  var el2 = dom.createTextNode("\n            ");
                   dom.appendChild(el1, el2);
                   dom.appendChild(el0, el1);
                   var el1 = dom.createTextNode("\n");
@@ -6955,7 +7222,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                   dom.insertBoundary(fragment, null);
                   return morphs;
                 },
-                statements: [["content", "item.who", ["loc", [null, [353, 6], [353, 18]]]], ["content", "item.email", ["loc", [null, [356, 6], [356, 20]]]], ["block", "if", [["get", "item.connected", ["loc", [null, [359, 11], [359, 25]]]]], [], 0, 1, ["loc", [null, [359, 5], [367, 12]]]]],
+                statements: [["content", "item.who", ["loc", [null, [395, 6], [395, 18]]]], ["content", "item.email", ["loc", [null, [398, 6], [398, 20]]]], ["block", "if", [["get", "item.connected", ["loc", [null, [401, 18], [401, 32]]]]], [], 0, 1, ["loc", [null, [401, 12], [414, 19]]]]],
                 locals: [],
                 templates: [child0, child1]
               };
@@ -6967,12 +7234,12 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                 "loc": {
                   "source": null,
                   "start": {
-                    "line": 349,
-                    "column": 2
+                    "line": 391,
+                    "column": 8
                   },
                   "end": {
-                    "line": 370,
-                    "column": 2
+                    "line": 417,
+                    "column": 8
                   }
                 },
                 "moduleName": "embtest/templates/dashboard.hbs"
@@ -6985,7 +7252,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                 var el0 = dom.createDocumentFragment();
                 var el1 = dom.createComment("");
                 dom.appendChild(el0, el1);
-                var el1 = dom.createTextNode("			");
+                var el1 = dom.createTextNode("          ");
                 dom.appendChild(el0, el1);
                 var el1 = dom.createComment("");
                 dom.appendChild(el0, el1);
@@ -7000,7 +7267,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                 dom.insertBoundary(fragment, 0);
                 return morphs;
               },
-              statements: [["block", "paper-item", [], ["class", "md-3-line", "action", ["subexpr", "action", ["joinRoom", ["get", "item", ["loc", [null, [350, 61], [350, 65]]]]], [], ["loc", [null, [350, 42], [350, 66]]]]], 0, null, ["loc", [null, [350, 3], [368, 18]]]], ["content", "paper-divider", ["loc", [null, [369, 3], [369, 20]]]]],
+              statements: [["block", "paper-item", [], ["class", "md-3-line", "action", ["subexpr", "action", ["joinRoom", ["get", "item", ["loc", [null, [392, 68], [392, 72]]]]], [], ["loc", [null, [392, 49], [392, 73]]]]], 0, null, ["loc", [null, [392, 10], [415, 25]]]], ["content", "paper-divider", ["loc", [null, [416, 10], [416, 27]]]]],
               locals: ["item"],
               templates: [child0]
             };
@@ -7012,12 +7279,12 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
               "loc": {
                 "source": null,
                 "start": {
-                  "line": 348,
-                  "column": 1
+                  "line": 390,
+                  "column": 6
                 },
                 "end": {
-                  "line": 371,
-                  "column": 1
+                  "line": 418,
+                  "column": 6
                 }
               },
               "moduleName": "embtest/templates/dashboard.hbs"
@@ -7039,7 +7306,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
               dom.insertBoundary(fragment, null);
               return morphs;
             },
-            statements: [["block", "each", [["get", "listData", ["loc", [null, [349, 10], [349, 18]]]]], [], 0, null, ["loc", [null, [349, 2], [370, 11]]]]],
+            statements: [["block", "each", [["get", "listData", ["loc", [null, [391, 16], [391, 24]]]]], [], 0, null, ["loc", [null, [391, 8], [417, 17]]]]],
             locals: [],
             templates: [child0]
           };
@@ -7052,12 +7319,12 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
               "loc": {
                 "source": null,
                 "start": {
-                  "line": 371,
-                  "column": 1
+                  "line": 418,
+                  "column": 6
                 },
                 "end": {
-                  "line": 378,
-                  "column": 1
+                  "line": 424,
+                  "column": 6
                 }
               },
               "moduleName": "embtest/templates/dashboard.hbs"
@@ -7068,19 +7335,19 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             hasRendered: false,
             buildFragment: function buildFragment(dom) {
               var el0 = dom.createDocumentFragment();
-              var el1 = dom.createTextNode("\n			");
+              var el1 = dom.createTextNode("        ");
               dom.appendChild(el0, el1);
               var el1 = dom.createElement("li");
               dom.setAttribute(el1, "class", "log");
               dom.setAttribute(el1, "style", "display: list-item;list-style-type: none;");
-              var el2 = dom.createTextNode("\n				");
+              var el2 = dom.createTextNode("\n          ");
               dom.appendChild(el1, el2);
               var el2 = dom.createElement("span");
               dom.setAttribute(el2, "class", "logText");
               var el3 = dom.createTextNode("\n					No Users\n				");
               dom.appendChild(el2, el3);
               dom.appendChild(el1, el2);
-              var el2 = dom.createTextNode("\n			");
+              var el2 = dom.createTextNode("\n        ");
               dom.appendChild(el1, el2);
               dom.appendChild(el0, el1);
               var el1 = dom.createTextNode("\n");
@@ -7102,12 +7369,12 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             "loc": {
               "source": null,
               "start": {
-                "line": 347,
-                "column": 1
+                "line": 389,
+                "column": 4
               },
               "end": {
-                "line": 379,
-                "column": 1
+                "line": 425,
+                "column": 4
               }
             },
             "moduleName": "embtest/templates/dashboard.hbs"
@@ -7129,7 +7396,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             dom.insertBoundary(fragment, null);
             return morphs;
           },
-          statements: [["block", "if", [["get", "listData", ["loc", [null, [348, 7], [348, 15]]]]], [], 0, 1, ["loc", [null, [348, 1], [378, 8]]]]],
+          statements: [["block", "if", [["get", "listData", ["loc", [null, [390, 12], [390, 20]]]]], [], 0, 1, ["loc", [null, [390, 6], [424, 13]]]]],
           locals: [],
           templates: [child0, child1]
         };
@@ -7141,12 +7408,12 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           "loc": {
             "source": null,
             "start": {
-              "line": 346,
-              "column": 1
+              "line": 388,
+              "column": 2
             },
             "end": {
-              "line": 380,
-              "column": 1
+              "line": 426,
+              "column": 2
             }
           },
           "moduleName": "embtest/templates/dashboard.hbs"
@@ -7168,7 +7435,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           dom.insertBoundary(fragment, null);
           return morphs;
         },
-        statements: [["block", "paper-list", [], [], 0, null, ["loc", [null, [347, 1], [379, 16]]]]],
+        statements: [["block", "paper-list", [], [], 0, null, ["loc", [null, [389, 4], [425, 19]]]]],
         locals: [],
         templates: [child0]
       };
@@ -7187,7 +7454,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             "column": 0
           },
           "end": {
-            "line": 382,
+            "line": 428,
             "column": 0
           }
         },
@@ -7199,10 +7466,8 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
       hasRendered: false,
       buildFragment: function buildFragment(dom) {
         var el0 = dom.createDocumentFragment();
-        var el1 = dom.createTextNode("\n");
-        dom.appendChild(el0, el1);
         var el1 = dom.createElement("style");
-        var el2 = dom.createTextNode("\n	body {\n	background: antiquewhite;\n	background-size: contain;\n	font-family: 'Roboto', sans-serif;\n	}\n	.bubble {\n	position: relative;\n	/*  width: 250px;*/\n	padding: 0px;\n	background: #FCF3D2;\n	-webkit-border-radius: 5px;\n	-moz-border-radius: 5px;\n	border-radius: 5px;\n	-webkit-box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);\n	-moz-box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);\n	box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);\n	}\n	.pointer {\n	content: \"\";\n	position: absolute;\n	display: block;\n	width: 0;\n	z-index: 1;\n	border-color: #fff transparent;\n	border-style: solid;\n	border-width: 15px 15px 0;\n	left: 250px;\n	top: 0px;\n	border-width: 0px 0px 19px 17px;\n	border-color: transparent #e5ffcc;\n	}\n	/*rgb(216, 252, 199)*/\n	.rightbubble {\n	position: relative;\n	border: #bbb solid 0;\n	-webkit-border-radius: 3px;\n	-moz-border-radius: 3px;\n	border-radius: 3px 3px 3px 3px;\n	margin: 0 auto;\n	z-index: 555;\n	border-color: rgb(0, 0, 0);\n	-webkit-box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);\n	-moz-box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);\n	box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);\n	background: #F4FFE9;\n	margin-bottom: 5px;\n	padding: 7px;\n	line-height: 18px;\n	font-size: 14px;\n	font-weight: 300;\n	min-width: 50px;\n	display: inline-block;\n	padding-right: 35px;\n	padding-top: 5px;\n	float: initial;\n	}\n	.rightbubble:after {\n	content: \"\";\n	position: absolute;\n	display: block;\n	width: 0;\n	z-index: 1;\n	border-color: #fff transparent;\n	border-style: solid;\n	border-width: 15px 15px 0;\n	left: 100%;\n	top: 0px;\n	border-width: 0px 0px 9px 6px;\n	border-color: transparent #e5ffcc;\n	}\n	.rightbubble:before {\n	content: \"\";\n	position: absolute;\n	display: block;\n	width: 0;\n	z-index: 1;\n	border-color: #fff transparent;\n	border-style: solid;\n	border-width: 15px 15px 0;\n	left: 100%;\n	top: 0px;\n	border-width: 0px 0px 11px 6px;\n	border-color: transparent rgba(169, 173, 165, 0.62);\n	}\n	.leftbubble {\n	background: #fff;\n	}\n	.leftbubble:after {\n	content: \"\";\n	position: absolute;\n	top: 0px;\n	left: 0%;\n	border-style: solid;\n	border-width: -6px 2px -3px -7px;\n	display: block;\n	width: 0;\n	z-index: 1;\n	content: ' ';\n	position: absolute;\n	width: 0;\n	height: 0;\n	left: -8px;\n	right: auto;\n	top: 0px;\n	bottom: auto;\n	border: 8px solid;\n	border-color: white transparent transparent transparent;\n	}\n	.leftbubble:before {\n	border-color: transparent;\n	}\n	.imagebubble {\n	padding-right: 5px;\n	padding-bottom: 2px;\n	padding-top: 5px;\n	}\n	.inputbubble {\n	position: absolute;\n	bottom: 10px;\n	left: 50px;\n	width: 250px;\n	margin: auto;\n	height: 47px;\n	padding: 0px;\n	z-index: 1000;\n	background: #FFFFFF;\n	-webkit-border-radius: 5px;\n	-moz-border-radius: 5px;\n	border-radius: 5px 0px 5px 5px;\n	-webkit-box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n	-moz-box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n	box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n	}\n	.inputbubble:after {\n	content: \"\";\n	position: absolute;\n	top: 8px;\n	right: -15;\n	border-style: solid;\n	border-width: 15px 0 15px 15px;\n	border-color: transparent #FFFFFF;\n	display: block;\n	width: 0;\n	z-index: 1;\n	content: \"\";\n	position: absolute;\n	display: block;\n	width: 0;\n	z-index: 1;\n	border-color: #fff transparent;\n	border-style: solid;\n	border-width: 15px 15px 0;\n	left: 250px;\n	top: 0px;\n	border-width: 0px 0px 9px 7px;\n	border-color: transparent #fff;\n	}\n	.inputMessage {\n	border: none;\n	height: 100%;\n	width: 100%;\n	padding: 10px;\n	outline: none;\n	border-radius: 5px;\n	}\n	.messageLi {\n	text-align: right;\n	margin-top: 10px;\n	}\n	.lileft {\n	text-align: left;\n	}\n	.fileDiv {\n	display: none;\n	height: 100px;\n	width: 100px;\n	position: absolute;\n	background: green;\n	border-radius: 50%;\n	box-shadow: rgba(97, 97, 97, 0.227451) 2px 2px 7px 4px;\n	top: 60%;\n	left: 200px;\n	}\n	.logText {\n	background: #d4eaf4;\n	padding: 7px;\n	font-size: 10px;\n	box-shadow: rgba(97, 97, 97, 0.227451) 1px 1px 0px 0px;\n	border-radius: 4px;\n	margin-bottom: 20px;\n	}\n	.statusImg {\n	position: absolute;\n	/* background: red; */\n	height: 11px;\n	/* width: 13px; */\n	bottom: 3px;\n	right: 5px;\n	}\n	.typing {\n	padding-right: 5px;\n	}\n	.log {\n	margin: 25px;\n	}\n	.chatImage {\n	height: 150px;\n	}\n	.chatImageEnlarge {\n	position: fixed;\n	height: auto;\n	max-width: 90%;\n	left: 5%;\n	max-height: 100%;\n	top:5%;\n	}\n	.pages {\n	height: 100%;\n	}\n	.chat.page {\n	display: block;\n	overflow: hidden;\n	}\n	.spinner {\n	width: 50px;\n	height: 20px;\n	text-align: center;\n	font-size: 10px;\n	}\n	.messages {\n	position: absolute;\n	top: 0;\n	bottom: 0px;\n	left: 0;\n	background: #87FF91;\n	right: -17px;\n	overflow: auto;\n	padding-right: 32px;\n	width: auto;\n	height: 100%;\n	}\n	.chatArea {\n	padding-bottom: 0px;\n	}\n	.page{\n	position: relative;\n	}\n	.spinner >\n	div {\n	background-color: #333;\n	height: 100%;\n	width: 3px;\n	display: inline-block;\n	margin: 3px;\n	-webkit-animation: sk-stretchdelay 1.2s infinite ease-in-out;\n	animation: sk-stretchdelay 1.2s infinite ease-in-out;\n	}\n	.spinner .rect2 {\n	-webkit-animation-delay: -1.1s;\n	animation-delay: -1.1s;\n	}\n	.spinner .rect3 {\n	-webkit-animation-delay: -1.0s;\n	animation-delay: -1.0s;\n	}\n	.spinner .rect4 {\n	-webkit-animation-delay: -0.9s;\n	animation-delay: -0.9s;\n	}\n	.spinner .rect5 {\n	-webkit-animation-delay: -0.8s;\n	animation-delay: -0.8s;\n	}\n	@-webkit-keyframes sk-stretchdelay {\n	0%, 40%, 100% { -webkit-transform: scaleY(0.4) }\n	20% { -webkit-transform: scaleY(1.0) }\n	}\n	@keyframes sk-stretchdelay {\n	0%, 40%, 100% {\n	transform: scaleY(0.4);\n	-webkit-transform: scaleY(0.4);\n	}  20% {\n	transform: scaleY(1.0);\n	-webkit-transform: scaleY(1.0);\n	}\n");
+        var el2 = dom.createTextNode("\n    .bubble {\n    position: relative;\n    /*	width: 250px;*/\n    padding: 0px;\n    background: #FCF3D2;\n    -webkit-border-radius: 5px;\n    -moz-border-radius: 5px;\n    border-radius: 5px;\n    -webkit-box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);\n    -moz-box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);\n    box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);\n  }\n\n  .pointer {\n    content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n    left: 250px;\n    top: 0px;\n    border-width: 0px 0px 19px 17px;\n    border-color: transparent #e5ffcc;\n  }\n  /*rgb(216, 252, 199)*/\n\n  .rightbubble {\n    position: relative;\n    border: #bbb solid 0;\n    -webkit-border-radius: 3px;\n    -moz-border-radius: 3px;\n    border-radius: 3px 3px 3px 3px;\n    margin: 0 auto;\n    z-index: 555;\n    border-color: rgb(0, 0, 0);\n    -webkit-box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);\n    -moz-box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);\n    box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);\n    background: #F4FFE9;\n    margin-bottom: 5px;\n    padding: 7px;\n    line-height: 18px;\n    font-size: 14px;\n    font-weight: 300;\n    min-width: 50px;\n    display: inline-block;\n    padding-right: 35px;\n    padding-top: 5px;\n    float: initial;\n  }\n\n  .rightbubble:after {\n    content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n    left: 100%;\n    top: 0px;\n    border-width: 0px 0px 9px 6px;\n    border-color: transparent #e5ffcc;\n  }\n\n  .rightbubble:before {\n    content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n    left: 100%;\n    top: 0px;\n    border-width: 0px 0px 11px 6px;\n    border-color: transparent rgba(169, 173, 165, 0.62);\n  }\n\n  .leftbubble {\n    background: #fff;\n  }\n\n  .leftbubble:after {\n    content: \"\";\n    position: absolute;\n    top: 0px;\n    left: 0%;\n    border-style: solid;\n    border-width: -6px 2px -3px -7px;\n    display: block;\n    width: 0;\n    z-index: 1;\n    content: ' ';\n    position: absolute;\n    width: 0;\n    height: 0;\n    left: -8px;\n    right: auto;\n    top: 0px;\n    bottom: auto;\n    border: 8px solid;\n    border-color: white transparent transparent transparent;\n  }\n\n  .leftbubble:before {\n    border-color: transparent;\n  }\n\n  .imagebubble {\n    padding-right: 5px;\n    padding-bottom: 2px;\n    padding-top: 5px;\n  }\n\n  .inputbubble {\n    position: absolute;\n    bottom: 10px;\n    left: 50px;\n    width: 250px;\n    margin: auto;\n    height: 47px;\n    padding: 0px;\n    z-index: 1000;\n    background: #FFFFFF;\n    -webkit-border-radius: 5px;\n    -moz-border-radius: 5px;\n    border-radius: 5px 0px 5px 5px;\n    -webkit-box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n    -moz-box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n    box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n  }\n\n  .inputbubble:after {\n    content: \"\";\n    position: absolute;\n    top: 8px;\n    right: -15;\n    border-style: solid;\n    border-width: 15px 0 15px 15px;\n    border-color: transparent #FFFFFF;\n    display: block;\n    width: 0;\n    z-index: 1;\n    content: \"\";\n    position: absolute;\n    display: block;\n    width: 0;\n    z-index: 1;\n    border-color: #fff transparent;\n    border-style: solid;\n    border-width: 15px 15px 0;\n    left: 250px;\n    top: 0px;\n    border-width: 0px 0px 9px 7px;\n    border-color: transparent #fff;\n  }\n\n  .inputMessage {\n    border: none;\n    height: 100%;\n    width: 100%;\n    padding: 10px;\n    outline: none;\n    border-radius: 5px;\n  }\n\n  .messageLi {\n    text-align: right;\n    margin-top: 10px;\n  }\n\n  .lileft {\n    text-align: left;\n  }\n\n  .fileDiv {\n    height: 40px;\n    width: 40px;\n    position: absolute;\n    background: rgba(241, 227, 212, 0.62);\n    border-radius: 50%;\n    box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;\n    bottom: 10px;\n    right: 10px;\n    text-align: center;\n  }\n\n  .fileDiv img {\n    height: 56%;\n    margin-top: 9px;\n    vertical-align: bottom;\n  }\n\n  .logText {\n    background: #d4eaf4;\n    padding: 7px;\n    font-size: 10px;\n    box-shadow: rgba(97, 97, 97, 0.227451) 1px 1px 0px 0px;\n    border-radius: 4px;\n    margin-bottom: 20px;\n  }\n\n  .statusImg {\n    position: absolute;\n    /* background: red; */\n    height: 11px;\n    /* width: 13px; */\n    bottom: 3px;\n    right: 5px;\n  }\n\n  .typing {\n    padding-right: 5px;\n  }\n\n  .log {\n    margin: 25px;\n  }\n\n  .chatImage {\n    height: 150px;\n  }\n\n  .chatImageEnlarge {\n    position: fixed;\n    height: auto;\n    max-width: 90%;\n    left: 5%;\n    max-height: 100%;\n    top: 5%;\n  }\n\n  .pages {\n    height: 100%;\n  }\n\n  .chat.page {\n    display: block;\n    overflow: hidden;\n  }\n\n  .spinner {\n    width: 50px;\n    height: 20px;\n    text-align: center;\n    font-size: 10px;\n  }\n\n  .messages {\n    position: absolute;\n    top: 0;\n    bottom: 0px;\n    left: 0;\n    right: -17px;\n    overflow: auto;\n    padding-right: 32px;\n    width: auto;\n    height: 87%;\n  }\n\n  .chatArea {\n    padding-bottom: 0px;\n    background: rgba(135, 255, 145, 0.4);\n  }\n\n  .page {\n    position: relative;\n  }\n\n  .spinner > div {\n    background-color: #333;\n    height: 100%;\n    width: 3px;\n    display: inline-block;\n    margin: 3px;\n    -webkit-animation: sk-stretchdelay 1.2s infinite ease-in-out;\n    animation: sk-stretchdelay 1.2s infinite ease-in-out;\n  }\n\n  .spinner .rect2 {\n    -webkit-animation-delay: -1.1s;\n    animation-delay: -1.1s;\n  }\n\n  .spinner .rect3 {\n    -webkit-animation-delay: -1.0s;\n    animation-delay: -1.0s;\n  }\n\n  .spinner .rect4 {\n    -webkit-animation-delay: -0.9s;\n    animation-delay: -0.9s;\n  }\n\n  .spinner .rect5 {\n    -webkit-animation-delay: -0.8s;\n    animation-delay: -0.8s;\n  }\n\n  @-webkit-keyframes sk-stretchdelay {\n    0%,\n    40%,\n    100% {\n      -webkit-transform: scaleY(0.4)\n    }\n    20% {\n      -webkit-transform: scaleY(1.0)\n    }\n  }\n\n  @keyframes sk-stretchdelay {\n    0%,\n    40%,\n    100% {\n      transform: scaleY(0.4);\n      -webkit-transform: scaleY(0.4);\n    }\n    20% {\n      transform: scaleY(1.0);\n      -webkit-transform: scaleY(1.0);\n    }\n");
         dom.appendChild(el1, el2);
         dom.appendChild(el0, el1);
         var el1 = dom.createTextNode("\n");
@@ -7221,11 +7486,9 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
         dom.appendChild(el0, el1);
         var el1 = dom.createElement("div");
         dom.setAttribute(el1, "class", "dashboard");
-        var el2 = dom.createTextNode("\n\n\n");
+        var el2 = dom.createTextNode("\n");
         dom.appendChild(el1, el2);
         var el2 = dom.createComment("");
-        dom.appendChild(el1, el2);
-        var el2 = dom.createTextNode("\n\n");
         dom.appendChild(el1, el2);
         var el2 = dom.createComment("");
         dom.appendChild(el1, el2);
@@ -7235,16 +7498,16 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
         return el0;
       },
       buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-        var element4 = dom.childAt(fragment, [9]);
+        var element6 = dom.childAt(fragment, [8]);
         var morphs = new Array(5);
-        morphs[0] = dom.createMorphAt(fragment, 3, 3, contextualElement);
-        morphs[1] = dom.createMorphAt(fragment, 5, 5, contextualElement);
-        morphs[2] = dom.createMorphAt(fragment, 7, 7, contextualElement);
-        morphs[3] = dom.createMorphAt(element4, 1, 1);
-        morphs[4] = dom.createMorphAt(element4, 3, 3);
+        morphs[0] = dom.createMorphAt(fragment, 2, 2, contextualElement);
+        morphs[1] = dom.createMorphAt(fragment, 4, 4, contextualElement);
+        morphs[2] = dom.createMorphAt(fragment, 6, 6, contextualElement);
+        morphs[3] = dom.createMorphAt(element6, 1, 1);
+        morphs[4] = dom.createMorphAt(element6, 2, 2);
         return morphs;
       },
-      statements: [["block", "paper-button", [], ["class", "login-options", "raised", true, "primary", true, "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [289, 70], [289, 75]]]]], [], []], "action", ["subexpr", "action", ["testprotectedApi"], [], ["loc", [null, [289, 83], [289, 110]]]]], 0, null, ["loc", [null, [289, 0], [289, 147]]]], ["block", "paper-button", [], ["class", "login-options", "raised", true, "primary", true, "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [290, 70], [290, 75]]]]], [], []], "action", ["subexpr", "action", ["socketTest"], [], ["loc", [null, [290, 83], [290, 104]]]]], 1, null, ["loc", [null, [290, 0], [290, 145]]]], ["content", "outlet", ["loc", [null, [291, 0], [291, 10]]]], ["block", "paper-content", [], ["class", "md-whiteframe-z1 list-demo dash chat-window"], 2, null, ["loc", [null, [295, 1], [343, 19]]]], ["block", "paper-content", [], ["class", "md-whiteframe-z1 list-demo dash name-list"], 3, null, ["loc", [null, [346, 1], [380, 19]]]]],
+      statements: [["block", "paper-button", [], ["class", "login-options", "raised", true, "primary", true, "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [330, 70], [330, 75]]]]], [], []], "action", ["subexpr", "action", ["testprotectedApi"], [], ["loc", [null, [330, 83], [330, 110]]]]], 0, null, ["loc", [null, [330, 0], [330, 147]]]], ["block", "paper-button", [], ["class", "login-options", "raised", true, "primary", true, "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [331, 70], [331, 75]]]]], [], []], "action", ["subexpr", "action", ["socketTest"], [], ["loc", [null, [331, 83], [331, 104]]]]], 1, null, ["loc", [null, [331, 0], [331, 145]]]], ["content", "outlet", ["loc", [null, [332, 0], [332, 10]]]], ["block", "paper-content", [], ["class", "md-whiteframe-z1 list-demo dash chat-window"], 2, null, ["loc", [null, [334, 2], [387, 20]]]], ["block", "paper-content", [], ["class", "md-whiteframe-z1 list-demo dash name-list"], 3, null, ["loc", [null, [388, 2], [426, 20]]]]],
       locals: [],
       templates: [child0, child1, child2, child3]
     };
@@ -7400,7 +7663,7 @@ define("embtest/templates/login", ["exports"], function (exports) {
             dom.appendChild(el0, el1);
             var el1 = dom.createComment("");
             dom.appendChild(el0, el1);
-            var el1 = dom.createTextNode("\n		\n		");
+            var el1 = dom.createTextNode("\n\n		");
             dom.appendChild(el0, el1);
             var el1 = dom.createComment("");
             dom.appendChild(el0, el1);
@@ -7522,7 +7785,7 @@ define("embtest/templates/login", ["exports"], function (exports) {
             hasRendered: false,
             buildFragment: function buildFragment(dom) {
               var el0 = dom.createDocumentFragment();
-              var el1 = dom.createTextNode("		\n	");
+              var el1 = dom.createTextNode("\n	");
               dom.appendChild(el0, el1);
               var el1 = dom.createComment("");
               dom.appendChild(el0, el1);
@@ -7600,7 +7863,7 @@ define("embtest/templates/login", ["exports"], function (exports) {
             hasRendered: false,
             buildFragment: function buildFragment(dom) {
               var el0 = dom.createDocumentFragment();
-              var el1 = dom.createTextNode("		\n	");
+              var el1 = dom.createTextNode("\n	");
               dom.appendChild(el0, el1);
               var el1 = dom.createComment("");
               dom.appendChild(el0, el1);
@@ -7736,11 +7999,15 @@ define("embtest/templates/login", ["exports"], function (exports) {
           dom.appendChild(el0, el1);
           var el1 = dom.createComment("");
           dom.appendChild(el0, el1);
-          var el1 = dom.createTextNode("\n	\n");
+          var el1 = dom.createTextNode("\n\n");
           dom.appendChild(el0, el1);
           var el1 = dom.createComment("");
           dom.appendChild(el0, el1);
-          var el1 = dom.createTextNode("	\n	");
+          var el1 = dom.createTextNode("\n	");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createTextNode("\n");
           dom.appendChild(el0, el1);
           var el1 = dom.createComment("");
           dom.appendChild(el0, el1);
@@ -7749,10 +8016,6 @@ define("embtest/templates/login", ["exports"], function (exports) {
           var el1 = dom.createComment("");
           dom.appendChild(el0, el1);
           var el1 = dom.createTextNode("\n");
-          dom.appendChild(el0, el1);
-          var el1 = dom.createComment("");
-          dom.appendChild(el0, el1);
-          var el1 = dom.createTextNode("	\n");
           dom.appendChild(el0, el1);
           return el0;
         },
@@ -7767,7 +8030,7 @@ define("embtest/templates/login", ["exports"], function (exports) {
           dom.insertBoundary(fragment, 0);
           return morphs;
         },
-        statements: [["block", "paper-toolbar", [], [], 0, null, ["loc", [null, [2, 1], [5, 19]]]], ["inline", "paper-input", [], ["label", "Name", "isTouched", ["subexpr", "@mut", [["get", "nameTouched", ["loc", [null, [6, 38], [6, 49]]]]], [], []], "value", ["subexpr", "@mut", [["get", "user.name", ["loc", [null, [6, 56], [6, 65]]]]], [], []], "type", "text", "errText", ["subexpr", "@mut", [["get", "nameValidation", ["loc", [null, [6, 86], [6, 100]]]]], [], []]], ["loc", [null, [6, 1], [6, 102]]]], ["block", "animated-if", [], ["condition", ["subexpr", "@mut", [["get", "signup", ["loc", [null, [8, 26], [8, 32]]]]], [], []]], 1, null, ["loc", [null, [8, 1], [12, 17]]]], ["inline", "paper-input", [], ["label", "Password", "isTouched", ["subexpr", "@mut", [["get", "password1Touched", ["loc", [null, [14, 43], [14, 59]]]]], [], []], "errText", ["subexpr", "@mut", [["get", "passwordValidation", ["loc", [null, [14, 68], [14, 86]]]]], [], []], "type", "password", "value", ["subexpr", "@mut", [["get", "user.password1", ["loc", [null, [14, 109], [14, 123]]]]], [], []]], ["loc", [null, [14, 1], [14, 125]]]], ["block", "animated-if", [], ["condition", ["subexpr", "@mut", [["get", "signup", ["loc", [null, [15, 26], [15, 32]]]]], [], []]], 2, null, ["loc", [null, [15, 1], [17, 17]]]], ["block", "if", [["get", "notLoading", ["loc", [null, [19, 6], [19, 16]]]]], [], 3, 4, ["loc", [null, [19, 0], [33, 8]]]]],
+        statements: [["block", "paper-toolbar", [], [], 0, null, ["loc", [null, [2, 1], [5, 19]]]], ["inline", "paper-input", [], ["label", "Name", "class", "name", "isTouched", ["subexpr", "@mut", [["get", "nameTouched", ["loc", [null, [6, 51], [6, 62]]]]], [], []], "value", ["subexpr", "@mut", [["get", "user.name", ["loc", [null, [6, 69], [6, 78]]]]], [], []], "type", "text", "errText", ["subexpr", "@mut", [["get", "nameValidation", ["loc", [null, [6, 99], [6, 113]]]]], [], []]], ["loc", [null, [6, 1], [6, 115]]]], ["block", "animated-if", [], ["condition", ["subexpr", "@mut", [["get", "signup", ["loc", [null, [8, 26], [8, 32]]]]], [], []]], 1, null, ["loc", [null, [8, 1], [12, 17]]]], ["inline", "paper-input", [], ["label", "Password", "class", "pass1", "isTouched", ["subexpr", "@mut", [["get", "password1Touched", ["loc", [null, [14, 57], [14, 73]]]]], [], []], "errText", ["subexpr", "@mut", [["get", "passwordValidation", ["loc", [null, [14, 82], [14, 100]]]]], [], []], "type", "password", "value", ["subexpr", "@mut", [["get", "user.password1", ["loc", [null, [14, 123], [14, 137]]]]], [], []]], ["loc", [null, [14, 1], [14, 139]]]], ["block", "animated-if", [], ["condition", ["subexpr", "@mut", [["get", "signup", ["loc", [null, [15, 26], [15, 32]]]]], [], []]], 2, null, ["loc", [null, [15, 1], [17, 17]]]], ["block", "if", [["get", "notLoading", ["loc", [null, [19, 6], [19, 16]]]]], [], 3, 4, ["loc", [null, [19, 0], [33, 8]]]]],
         locals: [],
         templates: [child0, child1, child2, child3, child4]
       };
@@ -7903,7 +8166,7 @@ catch(err) {
 
 /* jshint ignore:start */
 if (!runningTests) {
-  require("embtest/app")["default"].create({"name":"embtest","version":"0.0.0+4f48597e"});
+  require("embtest/app")["default"].create({"name":"embtest","version":"0.0.0+ebe2783b"});
 }
 /* jshint ignore:end */
 //# sourceMappingURL=embtest.map

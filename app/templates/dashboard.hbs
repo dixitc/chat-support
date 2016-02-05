@@ -1,381 +1,427 @@
-
 <style>
-	body {
-	background: antiquewhite;
-	background-size: contain;
-	font-family: 'Roboto', sans-serif;
-	}
-	.bubble {
-	position: relative;
-	/*  width: 250px;*/
-	padding: 0px;
-	background: #FCF3D2;
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
-	border-radius: 5px;
-	-webkit-box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);
-	-moz-box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);
-	box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);
-	}
-	.pointer {
-	content: "";
-	position: absolute;
-	display: block;
-	width: 0;
-	z-index: 1;
-	border-color: #fff transparent;
-	border-style: solid;
-	border-width: 15px 15px 0;
-	left: 250px;
-	top: 0px;
-	border-width: 0px 0px 19px 17px;
-	border-color: transparent #e5ffcc;
-	}
-	/*rgb(216, 252, 199)*/
-	.rightbubble {
-	position: relative;
-	border: #bbb solid 0;
-	-webkit-border-radius: 3px;
-	-moz-border-radius: 3px;
-	border-radius: 3px 3px 3px 3px;
-	margin: 0 auto;
-	z-index: 555;
-	border-color: rgb(0, 0, 0);
-	-webkit-box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);
-	-moz-box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);
-	box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);
-	background: #F4FFE9;
-	margin-bottom: 5px;
-	padding: 7px;
-	line-height: 18px;
-	font-size: 14px;
-	font-weight: 300;
-	min-width: 50px;
-	display: inline-block;
-	padding-right: 35px;
-	padding-top: 5px;
-	float: initial;
-	}
-	.rightbubble:after {
-	content: "";
-	position: absolute;
-	display: block;
-	width: 0;
-	z-index: 1;
-	border-color: #fff transparent;
-	border-style: solid;
-	border-width: 15px 15px 0;
-	left: 100%;
-	top: 0px;
-	border-width: 0px 0px 9px 6px;
-	border-color: transparent #e5ffcc;
-	}
-	.rightbubble:before {
-	content: "";
-	position: absolute;
-	display: block;
-	width: 0;
-	z-index: 1;
-	border-color: #fff transparent;
-	border-style: solid;
-	border-width: 15px 15px 0;
-	left: 100%;
-	top: 0px;
-	border-width: 0px 0px 11px 6px;
-	border-color: transparent rgba(169, 173, 165, 0.62);
-	}
-	.leftbubble {
-	background: #fff;
-	}
-	.leftbubble:after {
-	content: "";
-	position: absolute;
-	top: 0px;
-	left: 0%;
-	border-style: solid;
-	border-width: -6px 2px -3px -7px;
-	display: block;
-	width: 0;
-	z-index: 1;
-	content: ' ';
-	position: absolute;
-	width: 0;
-	height: 0;
-	left: -8px;
-	right: auto;
-	top: 0px;
-	bottom: auto;
-	border: 8px solid;
-	border-color: white transparent transparent transparent;
-	}
-	.leftbubble:before {
-	border-color: transparent;
-	}
-	.imagebubble {
-	padding-right: 5px;
-	padding-bottom: 2px;
-	padding-top: 5px;
-	}
-	.inputbubble {
-	position: absolute;
-	bottom: 10px;
-	left: 50px;
-	width: 250px;
-	margin: auto;
-	height: 47px;
-	padding: 0px;
-	z-index: 1000;
-	background: #FFFFFF;
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
-	border-radius: 5px 0px 5px 5px;
-	-webkit-box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;
-	-moz-box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;
-	box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;
-	}
-	.inputbubble:after {
-	content: "";
-	position: absolute;
-	top: 8px;
-	right: -15;
-	border-style: solid;
-	border-width: 15px 0 15px 15px;
-	border-color: transparent #FFFFFF;
-	display: block;
-	width: 0;
-	z-index: 1;
-	content: "";
-	position: absolute;
-	display: block;
-	width: 0;
-	z-index: 1;
-	border-color: #fff transparent;
-	border-style: solid;
-	border-width: 15px 15px 0;
-	left: 250px;
-	top: 0px;
-	border-width: 0px 0px 9px 7px;
-	border-color: transparent #fff;
-	}
-	.inputMessage {
-	border: none;
-	height: 100%;
-	width: 100%;
-	padding: 10px;
-	outline: none;
-	border-radius: 5px;
-	}
-	.messageLi {
-	text-align: right;
-	margin-top: 10px;
-	}
-	.lileft {
-	text-align: left;
-	}
-	.fileDiv {
-	display: none;
-	height: 100px;
-	width: 100px;
-	position: absolute;
-	background: green;
-	border-radius: 50%;
-	box-shadow: rgba(97, 97, 97, 0.227451) 2px 2px 7px 4px;
-	top: 60%;
-	left: 200px;
-	}
-	.logText {
-	background: #d4eaf4;
-	padding: 7px;
-	font-size: 10px;
-	box-shadow: rgba(97, 97, 97, 0.227451) 1px 1px 0px 0px;
-	border-radius: 4px;
-	margin-bottom: 20px;
-	}
-	.statusImg {
-	position: absolute;
-	/* background: red; */
-	height: 11px;
-	/* width: 13px; */
-	bottom: 3px;
-	right: 5px;
-	}
-	.typing {
-	padding-right: 5px;
-	}
-	.log {
-	margin: 25px;
-	}
-	.chatImage {
-	height: 150px;
-	}
-	.chatImageEnlarge {
-	position: fixed;
-	height: auto;
-	max-width: 90%;
-	left: 5%;
-	max-height: 100%;
-	top:5%;
-	}
-	.pages {
-	height: 100%;
-	}
-	.chat.page {
-	display: block;
-	overflow: hidden;
-	}
-	.spinner {
-	width: 50px;
-	height: 20px;
-	text-align: center;
-	font-size: 10px;
-	}
-	.messages {
-	position: absolute;
-	top: 0;
-	bottom: 0px;
-	left: 0;
-	background: #87FF91;
-	right: -17px;
-	overflow: auto;
-	padding-right: 32px;
-	width: auto;
-	height: 100%;
-	}
-	.chatArea {
-	padding-bottom: 0px;
-	}
-	.page{
-	position: relative;
-	}
-	.spinner >
-	div {
-	background-color: #333;
-	height: 100%;
-	width: 3px;
-	display: inline-block;
-	margin: 3px;
-	-webkit-animation: sk-stretchdelay 1.2s infinite ease-in-out;
-	animation: sk-stretchdelay 1.2s infinite ease-in-out;
-	}
-	.spinner .rect2 {
-	-webkit-animation-delay: -1.1s;
-	animation-delay: -1.1s;
-	}
-	.spinner .rect3 {
-	-webkit-animation-delay: -1.0s;
-	animation-delay: -1.0s;
-	}
-	.spinner .rect4 {
-	-webkit-animation-delay: -0.9s;
-	animation-delay: -0.9s;
-	}
-	.spinner .rect5 {
-	-webkit-animation-delay: -0.8s;
-	animation-delay: -0.8s;
-	}
-	@-webkit-keyframes sk-stretchdelay {
-	0%, 40%, 100% { -webkit-transform: scaleY(0.4) }
-	20% { -webkit-transform: scaleY(1.0) }
-	}
-	@keyframes sk-stretchdelay {
-	0%, 40%, 100% {
-	transform: scaleY(0.4);
-	-webkit-transform: scaleY(0.4);
-	}  20% {
-	transform: scaleY(1.0);
-	-webkit-transform: scaleY(1.0);
-	}
+    .bubble {
+    position: relative;
+    /*	width: 250px;*/
+    padding: 0px;
+    background: #FCF3D2;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    -webkit-box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);
+    -moz-box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);
+    box-shadow: 1px 2px 6px 0px rgba(97, 97, 97, 0.23);
+  }
+
+  .pointer {
+    content: "";
+    position: absolute;
+    display: block;
+    width: 0;
+    z-index: 1;
+    border-color: #fff transparent;
+    border-style: solid;
+    border-width: 15px 15px 0;
+    left: 250px;
+    top: 0px;
+    border-width: 0px 0px 19px 17px;
+    border-color: transparent #e5ffcc;
+  }
+  /*rgb(216, 252, 199)*/
+
+  .rightbubble {
+    position: relative;
+    border: #bbb solid 0;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px 3px 3px 3px;
+    margin: 0 auto;
+    z-index: 555;
+    border-color: rgb(0, 0, 0);
+    -webkit-box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);
+    -moz-box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);
+    box-shadow: 1px 1px 1px 0px rgba(97, 97, 97, 0.48);
+    background: #F4FFE9;
+    margin-bottom: 5px;
+    padding: 7px;
+    line-height: 18px;
+    font-size: 14px;
+    font-weight: 300;
+    min-width: 50px;
+    display: inline-block;
+    padding-right: 35px;
+    padding-top: 5px;
+    float: initial;
+  }
+
+  .rightbubble:after {
+    content: "";
+    position: absolute;
+    display: block;
+    width: 0;
+    z-index: 1;
+    border-color: #fff transparent;
+    border-style: solid;
+    border-width: 15px 15px 0;
+    left: 100%;
+    top: 0px;
+    border-width: 0px 0px 9px 6px;
+    border-color: transparent #e5ffcc;
+  }
+
+  .rightbubble:before {
+    content: "";
+    position: absolute;
+    display: block;
+    width: 0;
+    z-index: 1;
+    border-color: #fff transparent;
+    border-style: solid;
+    border-width: 15px 15px 0;
+    left: 100%;
+    top: 0px;
+    border-width: 0px 0px 11px 6px;
+    border-color: transparent rgba(169, 173, 165, 0.62);
+  }
+
+  .leftbubble {
+    background: #fff;
+  }
+
+  .leftbubble:after {
+    content: "";
+    position: absolute;
+    top: 0px;
+    left: 0%;
+    border-style: solid;
+    border-width: -6px 2px -3px -7px;
+    display: block;
+    width: 0;
+    z-index: 1;
+    content: ' ';
+    position: absolute;
+    width: 0;
+    height: 0;
+    left: -8px;
+    right: auto;
+    top: 0px;
+    bottom: auto;
+    border: 8px solid;
+    border-color: white transparent transparent transparent;
+  }
+
+  .leftbubble:before {
+    border-color: transparent;
+  }
+
+  .imagebubble {
+    padding-right: 5px;
+    padding-bottom: 2px;
+    padding-top: 5px;
+  }
+
+  .inputbubble {
+    position: absolute;
+    bottom: 10px;
+    left: 50px;
+    width: 250px;
+    margin: auto;
+    height: 47px;
+    padding: 0px;
+    z-index: 1000;
+    background: #FFFFFF;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px 0px 5px 5px;
+    -webkit-box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;
+    -moz-box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;
+    box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;
+  }
+
+  .inputbubble:after {
+    content: "";
+    position: absolute;
+    top: 8px;
+    right: -15;
+    border-style: solid;
+    border-width: 15px 0 15px 15px;
+    border-color: transparent #FFFFFF;
+    display: block;
+    width: 0;
+    z-index: 1;
+    content: "";
+    position: absolute;
+    display: block;
+    width: 0;
+    z-index: 1;
+    border-color: #fff transparent;
+    border-style: solid;
+    border-width: 15px 15px 0;
+    left: 250px;
+    top: 0px;
+    border-width: 0px 0px 9px 7px;
+    border-color: transparent #fff;
+  }
+
+  .inputMessage {
+    border: none;
+    height: 100%;
+    width: 100%;
+    padding: 10px;
+    outline: none;
+    border-radius: 5px;
+  }
+
+  .messageLi {
+    text-align: right;
+    margin-top: 10px;
+  }
+
+  .lileft {
+    text-align: left;
+  }
+
+  .fileDiv {
+    height: 40px;
+    width: 40px;
+    position: absolute;
+    background: rgba(241, 227, 212, 0.62);
+    border-radius: 50%;
+    box-shadow: rgba(97, 97, 97, 0.227451) 1px 2px 3px 0px;
+    bottom: 10px;
+    right: 10px;
+    text-align: center;
+  }
+
+  .fileDiv img {
+    height: 56%;
+    margin-top: 9px;
+    vertical-align: bottom;
+  }
+
+  .logText {
+    background: #d4eaf4;
+    padding: 7px;
+    font-size: 10px;
+    box-shadow: rgba(97, 97, 97, 0.227451) 1px 1px 0px 0px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+  }
+
+  .statusImg {
+    position: absolute;
+    /* background: red; */
+    height: 11px;
+    /* width: 13px; */
+    bottom: 3px;
+    right: 5px;
+  }
+
+  .typing {
+    padding-right: 5px;
+  }
+
+  .log {
+    margin: 25px;
+  }
+
+  .chatImage {
+    height: 150px;
+  }
+
+  .chatImageEnlarge {
+    position: fixed;
+    height: auto;
+    max-width: 90%;
+    left: 5%;
+    max-height: 100%;
+    top: 5%;
+  }
+
+  .pages {
+    height: 100%;
+  }
+
+  .chat.page {
+    display: block;
+    overflow: hidden;
+  }
+
+  .spinner {
+    width: 50px;
+    height: 20px;
+    text-align: center;
+    font-size: 10px;
+  }
+
+  .messages {
+    position: absolute;
+    top: 0;
+    bottom: 0px;
+    left: 0;
+    right: -17px;
+    overflow: auto;
+    padding-right: 32px;
+    width: auto;
+    height: 87%;
+  }
+
+  .chatArea {
+    padding-bottom: 0px;
+    background: rgba(135, 255, 145, 0.4);
+  }
+
+  .page {
+    position: relative;
+  }
+
+  .spinner > div {
+    background-color: #333;
+    height: 100%;
+    width: 3px;
+    display: inline-block;
+    margin: 3px;
+    -webkit-animation: sk-stretchdelay 1.2s infinite ease-in-out;
+    animation: sk-stretchdelay 1.2s infinite ease-in-out;
+  }
+
+  .spinner .rect2 {
+    -webkit-animation-delay: -1.1s;
+    animation-delay: -1.1s;
+  }
+
+  .spinner .rect3 {
+    -webkit-animation-delay: -1.0s;
+    animation-delay: -1.0s;
+  }
+
+  .spinner .rect4 {
+    -webkit-animation-delay: -0.9s;
+    animation-delay: -0.9s;
+  }
+
+  .spinner .rect5 {
+    -webkit-animation-delay: -0.8s;
+    animation-delay: -0.8s;
+  }
+
+  @-webkit-keyframes sk-stretchdelay {
+    0%,
+    40%,
+    100% {
+      -webkit-transform: scaleY(0.4)
+    }
+    20% {
+      -webkit-transform: scaleY(1.0)
+    }
+  }
+
+  @keyframes sk-stretchdelay {
+    0%,
+    40%,
+    100% {
+      transform: scaleY(0.4);
+      -webkit-transform: scaleY(0.4);
+    }
+    20% {
+      transform: scaleY(1.0);
+      -webkit-transform: scaleY(1.0);
+    }
 </style>
 {{#paper-button class="login-options" raised=true primary=true signup=login action=(action "testprotectedApi")}}test protected api{{/paper-button}}
 {{#paper-button class="login-options" raised=true primary=true signup=login action=(action "socketTest")}}test socket connection{{/paper-button}}
 {{outlet}}
 <div class="dashboard">
-
-
-	{{#paper-content class="md-whiteframe-z1 list-demo dash chat-window"}}
-	<ul class="pages">
-		<li class="chat page">
-			<div class="chatArea">
-				<ul class="messages">
-					{{#if selectedUser}}
-											<li class="log" style="display: list-item;">
-						<span class="logText">
+  {{#paper-content class="md-whiteframe-z1 list-demo dash chat-window" }}
+    <ul class="pages">
+      <li class="chat page">
+        <div class="chatArea">
+          <ul class="messages">
+            {{#if selectedUser}}
+              <li class="log" style="display: list-item;">
+                <span class="logText">
 							Connected
 						</span>
-					</li>
-					{{#if selectedMessages}}
-						{{#each selectedMessages as |msg|}}
-							<li class="messageLi  {{if msg.type "lileft" ""}}">
-								
-								<div class="rightbubble message  {{if msg.type "leftbubble" ""}}">
-									<span class="messageBody">
+              </li>
+              {{#if selectedMessages}}
+                {{#each selectedMessages as |msg|}}
+                  <li class="messageLi	{{if msg.type "lileft" ""}}">
+                    <div class="rightbubble message	{{if msg.type "leftbubble" ""}} {{if msg.image "imagebubble" ""}}">
+                      {{#if msg.image}}
+                        <img src= {{msg.msg}} class="chatImage">
+                      {{else}}
+                        <span class="messageBody">
 										{{msg.msg}}
 									</span>
-								</div>
-							</li>
-						{{/each}}
-						{{else}}
-						<li class="log" style="display: list-item;">
-						<span class="logText">
+                      {{/if}}
+                    </div>
+                  </li>
+                {{/each}}
+              {{else}}
+                <li class="log" style="display: list-item;">
+                  <span class="logText">
 							No Messages
 						</span>
-					</li>
-						{{/if}}
-					{{else}}
-					<li class="log" style="display: list-item;">
-						<span class="logText">
-							No Users
+                </li>
+              {{/if}}
+            {{else}}
+              <li class="log" style="display: list-item;">
+                <span class="logText">
+							Not connected
 						</span>
-					</li>
-					{{/if}}
-				</ul>
-			</div>
-			{{#if selectedUser}}
-			<div class="inputbubble">
-				<input />
-				{{input value=firstName class="inputMessage" placeholder="Type a message" enter="sendMessage"}}
-			</div>
-			<div class="fileDiv">
-			</div>
-			{{/if}}
-		</li>
-	</ul>
-	{{/paper-content}}
+              </li>
+            {{/if}}
+          </ul>
+        </div>
+        {{#if selectedUser}}
+          <div class="inputbubble">
+            {{input value=firstName class="inputMessage" placeholder="Type a message" enter="sendMessage"}}
+          </div>
 
-
-	{{#paper-content class="md-whiteframe-z1 list-demo dash name-list"}}
-	{{#paper-list}}
-	{{#if listData}}
-		{{#each listData as |item|}}
-			{{#paper-item class="md-3-line" action=(action "joinRoom" item)}}
-				<div class="md-list-item-text">
-					<h3>
+          {{x-file-input name="files" multiple=false action=(action "imageBuffer") alt="Choose a File"}}
+          <div class="fileDiv" {{action "triggerFile"}}>
+            <img src="/images/ic_attachment_black_24dp_2x.png">
+          </div>
+        {{/if}}
+      </li>
+    </ul>
+  {{/paper-content}}
+  {{#paper-content class="md-whiteframe-z1 list-demo dash name-list" }}
+    {{#paper-list}}
+      {{#if listData}}
+        {{#each listData as |item|}}
+          {{#paper-item class="md-3-line" action=(action "joinRoom" item)}}
+            <div class="md-list-item-text">
+              <h3>
 						{{item.who}}
 					</h3>
-					<h4>
+              <h4>
 						{{item.email}}
 					</h4>
-				</div>
-					{{#if item.connected}}
-						<div class="countDiv">
-							{{item.msgs.length}}
-						</div>
-					{{else}}
-					<div class="connected">
-						
-					</div>
-					{{/if}}
-			{{/paper-item}}
-			{{paper-divider}}
-		{{/each}}
-	{{else}}
+            </div>
+            {{#if item.connected}}
 
-			<li class="log" style="display: list-item;list-style-type: none;">
-				<span class="logText">
+              {{#if item.unseenMsgs}}
+                <div class="countDiv">
+                  {{item.unseenMsgs}}
+                </div>
+                {{else}}
+                <div class="connected">
+                </div>
+              {{/if}}
+            {{else}}
+              <div class="not-connected">
+              </div>
+            {{/if}}
+          {{/paper-item}}
+          {{paper-divider}}
+        {{/each}}
+      {{else}}
+        <li class="log" style="display: list-item;list-style-type: none;">
+          <span class="logText">
 					No Users
 				</span>
-			</li>
-	{{/if}}
-	{{/paper-list}}
-	{{/paper-content}}
+        </li>
+      {{/if}}
+    {{/paper-list}}
+  {{/paper-content}}
 </div>
