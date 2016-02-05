@@ -5,7 +5,7 @@
 
 define('embtest/adapters/application', ['exports', 'ember-data', 'ember-simple-auth/mixins/data-adapter-mixin'], function (exports, _emberData, _emberSimpleAuthMixinsDataAdapterMixin) {
 	exports['default'] = _emberData['default'].RESTAdapter.extend(_emberSimpleAuthMixinsDataAdapterMixin['default'], {
-		host: 'http://localhost:3000',
+		host: 'http://172.16.1.168:3000',
 		authorizer: 'authorizer:custom'
 	});
 });
@@ -27,7 +27,7 @@ define('embtest/app', ['exports', 'ember', 'embtest/resolver', 'ember/load-initi
 });
 define('embtest/authenticators/custom', ['exports', 'ember', 'ember-simple-auth/authenticators/base'], function (exports, _ember, _emberSimpleAuthAuthenticatorsBase) {
     exports['default'] = _emberSimpleAuthAuthenticatorsBase['default'].extend({
-        tokenEndpoint: 'http://localhost:3000/login',
+        tokenEndpoint: 'http://172.16.1.168:3000/login',
         restore: function restore(data) {
             return new _ember['default'].RSVP.Promise(function (resolve, reject) {
                 if (!_ember['default'].isEmpty(data.token)) {
@@ -385,283 +385,308 @@ define('embtest/controllers/array', ['exports', 'ember'], function (exports, _em
   exports['default'] = _ember['default'].Controller;
 });
 define('embtest/controllers/dashboard', ['exports', 'ember'], function (exports, _ember) {
-  exports['default'] = _ember['default'].Controller.extend({
-    socketIOService: _ember['default'].inject.service('socket-io'),
-    listData: _ember['default'].A([]),
-    selectedUser: null,
-    selectedMessages: _ember['default'].computed('selectedUser', function () {
-      if (this.get('selectedUser')) {
+	exports['default'] = _ember['default'].Controller.extend({
+		socketIOService: _ember['default'].inject.service('socket-io'),
+		listData: _ember['default'].A([]),
+		session: _ember['default'].inject.service('session'),
+		selectedUser: null,
+		selectedMessages: _ember['default'].computed('selectedUser', function () {
+			if (this.get('selectedUser')) {
 
-        return this.listData[this.listData.map(function (e) {
-          return e.who;
-        }).indexOf(this.get('selectedUser'))].msgs;
-      } else {
-        return [];
-      }
-    }),
-    messagesCount: _ember['default'].computed('listData.@each.msgs', function (data) {
-      return this.get('listData').map(function (chore, index) {
+				return this.listData[this.listData.map(function (e) {
+					return e.who;
+				}).indexOf(this.get('selectedUser'))].msgs;
+			} else {
+				return [];
+			}
+		}),
+		messagesCount: _ember['default'].computed('listData.@each.msgs', function (data) {
+			return this.get('listData').map(function (chore, index) {
 
-        return 'msglength: ' + chore.msgs.length + '!';
-      });
-    }),
+				return 'msglength: ' + chore.msgs.length + '!';
+			});
+		}),
 
-    init: function init() {
-      this._super.apply(this, arguments);
+		init: function init() {
+			this._super.apply(this, arguments);
 
-      //USER INTERACTIONS
-      $(window).keydown(function (e) {
-        // Auto-focus the current input when a key is typed
-        if (event.ctrlKey || event.metaKey || event.altKey) {
-          $('.inputMessage').focus();
-        }
-      });
+			//USER INTERACTIONS
+			$(window).keydown(function (e) {
+				// Auto-focus the current input when a key is typed
+				if (event.ctrlKey || event.metaKey || event.altKey) {
+					$('.inputMessage').focus();
+				}
+			});
 
-      $("input:file").change(function (e) {
+			$("input:file").change(function (e) {
 
-        //Get the first (and only one) file element
-        //that is included in the original event
-        var file = e.originalEvent.target.files[0],
-            reader = new FileReader();
-        //When the file has been read...
-        reader.onload = function (evt) {
-          //Because of how the file was read,
-          //evt.target.result contains the image in base64 format
-          //Nothing special, just creates an img element
-          //and appends it to the DOM so my UI shows
-          //that I posted an image.
-          //send the image via Socket.io
+				//Get the first (and only one) file element
+				//that is included in the original event
+				var file = e.originalEvent.target.files[0],
+				    reader = new FileReader();
+				//When the file has been read...
+				reader.onload = function (evt) {
+					//Because of how the file was read,
+					//evt.target.result contains the image in base64 format
+					//Nothing special, just creates an img element
+					//and appends it to the DOM so my UI shows
+					//that I posted an image.
+					//send the image via Socket.io
 
-          this.sendFile(evt.target.result);
-        };
-        //And now, read the image and base64
-        reader.readAsDataURL(file);
-      });
-      /*
-       * 2) The next step you need to do is to create your actual socketIO.
-       */
-      var socket = this.get('socketIOService').socketFor('http://localhost:3001/');
+					this.sendFile(evt.target.result);
+				};
+				//And now, read the image and base64
+				reader.readAsDataURL(file);
+			});
+			/*
+    * 2) The next step you need to do is to create your actual socketIO.
+    */
+			var socket = this.get('socketIOService').socketFor('http://172.16.1.168:3001/');
 
-      /*
-       * 3) Define any event handlers
-       */
-      socket.on('connect', function () {
-        /*
-         * There are 2 ways to send messages to the server: send and emit
-         */
-        socket.emit('join support', {
-          email: 'support@example.com'
-        });
-      }, this);
+			/*
+    * 3) Define any event handlers
+    */
+			socket.on('connect', function () {
+				/*
+     * There are 2 ways to send messages to the server: send and emit
+     */
+				socket.emit('join support', {
+					email: 'support@example.com'
+				});
+			}, this);
 
-      /*
-       * 4) It is also possible to set event handlers on specific events
-       */
-      socket.on('user message', this.onMessage, this);
+			/*
+    * 4) It is also possible to set event handlers on specific events
+    */
+			socket.on('user message', this.onMessage, this);
+			socket.on('support message', this.onMessage, this);
 
-      socket.on('myCustomNamespace', function () {
-        socket.emit('anotherNamespace', 'some data');
-      }, this);
-      //   socket.emit('addsupport' ,{})
-      socket.on("new_msg", function (data) {});
-      socket.on('message received', function (data) {});
-      socket.on("user message", function (data) {
+			socket.on('myCustomNamespace', function () {
+				socket.emit('anotherNamespace', 'some data');
+			}, this);
+			//   socket.emit('addsupport' ,{})
+			socket.on("new_msg", function (data) {});
+			socket.on('message received', function (data) {});
+			socket.on("user message", function (data) {
 
-        socket.emit('userMsg received', data);
-      });
-      var self = this;
-      socket.on('new user', function (data) {
-        self.listData.pushObject(_ember['default'].Object.create({
-          who: data.username,
-          msgs: _ember['default'].A([]),
-          email: data.email,
-          connected: false,
-          unseenMsgs: 0
-        }));
-      });
-      socket.on('joined', function (data) {});
-      socket.on('updatechat', this.updateChat, this);
-      socket.on('support typing', function (data) {});
-      // Whenever the server emits 'stop typing', kill the typing message
-      socket.on('stop typing', function (data) {});
-    },
-    updateChat: function updateChat(data1, data2) {
+				socket.emit('userMsg received', data);
+			});
+			var self = this;
+			socket.on('new user', function (data) {
+				self.listData.pushObject(_ember['default'].Object.create({
+					who: data.username,
+					msgs: _ember['default'].A([]),
+					email: data.email,
+					connected: false,
+					unseenMsgs: 0
+				}));
+			});
+			socket.on('joined', function (data) {});
+			socket.on('support joining', function (data) {
+				console.log("SUPPORT JOINING");
+			});
+			socket.on('updatechat', this.updateChat, this);
+			socket.on('support typing', function (data) {
+				console.log("typing");
+			});
+			// Whenever the server emits 'stop typing', kill the typing message
+			socket.on('stop typing', function (data) {});
+		},
+		updateChat: function updateChat(data1, data2) {
 
-      this.listData[this.listData.map(function (e) {
-        return e.who;
-      }).indexOf(data2)].toggleProperty('connected');
-    },
+			this.listData[this.listData.map(function (e) {
+				return e.who;
+			}).indexOf(data2)].toggleProperty('connected');
+		},
 
-    onMessage: function onMessage(data) {
-      // This is executed within the ember run loop
-      var clientUser = this.listData[this.listData.map(function (e) {
-        return e.who;
-      }).indexOf(data.username)];
+		onMessage: function onMessage(data) {
+			// This is executed within the ember run loop
+			var self = this;
+			var selecteduser = this.listData[this.listData.map(function (e) {
+				return e.who;
+			}).indexOf(self.get('selectedUser'))];
+			console.log(selecteduser);
+			var clientUser = this.listData[this.listData.map(function (e) {
+				return e.who;
+			}).indexOf(data.username)];
 
-      if (data.image) {
+			console.log(clientUser);
+			if (data.image) {
 
-        clientUser.msgs.pushObject({
-          msg: data.buffer,
-          type: true,
-          image: true
-        });
-      } else {
-        clientUser.msgs.pushObject({
-          msg: data.msg,
-          type: true
-        });
-        clientUser.incrementProperty('unseenMsgs');
-      }
-      $('.messages').animate({
-        scrollTop: $('.messages').get(0).scrollHeight
-      }, 100);
-      //alert( data.msg );
-    },
-    sendFile: function sendFile(buf) {
+				clientUser.msgs.pushObject({
+					msg: data.buffer,
+					type: true,
+					image: true
+				});
+			} else {
+				clientUser.msgs.pushObject({
+					msg: data.msg,
+					type: true
+				});
+				if (clientUser.get('who') == selecteduser.who) {
+					console.log('MESSAGEUSER MATCHES SELECTEDUSER : dont add unseen messages');
+				} else {
 
-      var message = {};
+					clientUser.incrementProperty('unseenMsgs');
+				}
+			}
+			$('.messages').animate({
+				scrollTop: $('.messages').get(0).scrollHeight
+			}, 100);
+			//alert( data.msg );
+		},
+		sendFile: function sendFile(buf) {
 
-      // Prevent markup from being injected into the message
-      var clientUser = this.listData[this.listData.map(function (e) {
-        return e.who;
-      }).indexOf(this.get('selectedUser'))];
+			var message = {};
 
-      message.userEmail = clientUser.email;
-      message.buffer = buf;
-      message.image = true;
-      message.username = clientUser.who;
-      clientUser.msgs.pushObject({
-        msg: message.buffer,
-        image: true,
-        type: false
-      });
-      var socket = this.get('socketIOService').socketFor('http://localhost:3001/');
-      socket.emit('support image', message);
-      $('.messages').animate({
-        scrollTop: $('.messages').get(0).scrollHeight
-      }, 100);
-    },
-    actions: {
-      imageBuffer: function imageBuffer(evt) {
-        var self = this;
+			// Prevent markup from being injected into the message
+			var clientUser = this.listData[this.listData.map(function (e) {
+				return e.who;
+			}).indexOf(this.get('selectedUser'))];
 
-        //var file = e.originalEvent.target.files[0],
-        var reader = new FileReader();
-        //When the file has been read...
-        reader.onload = function (e) {
-          //Because of how the file was read,
-          //e.target.result contains the image in base64 format
-          //Nothing special, just creates an img element
-          //and appends it to the DOM so my UI shows
-          //that I posted an image.
-          //send the image via Socket.io
+			message.room = clientUser.email;
+			message.email = clientUser.email;
+			message.buffer = buf;
+			message.image = true;
+			message.username = clientUser.who;
+			clientUser.msgs.pushObject({
+				msg: message.buffer,
+				image: true,
+				type: false
+			});
+			var socket = this.get('socketIOService').socketFor('http://172.16.1.168:3001/');
+			socket.emit('support image', message);
+			$('.messages').animate({
+				scrollTop: $('.messages').get(0).scrollHeight
+			}, 100);
+		},
+		actions: {
+			imageBuffer: function imageBuffer(evt) {
+				var self = this;
 
-          self.sendFile(e.target.result);
-        };
-        //And now, read the image and base64
-        reader.readAsDataURL(evt[0]);
-      },
-      triggerFile: function triggerFile() {
-        $('.x-file--input').trigger('click');
-      },
-      sendMessage: function sendMessage(value) {
+				//var file = e.originalEvent.target.files[0],
+				var reader = new FileReader();
+				//When the file has been read...
+				reader.onload = function (e) {
+					//Because of how the file was read,
+					//e.target.result contains the image in base64 format
+					//Nothing special, just creates an img element
+					//and appends it to the DOM so my UI shows
+					//that I posted an image.
+					//send the image via Socket.io
 
-        var message = {};
-        message.msg = value;
-        // Prevent markup from being injected into the message
-        var clientUser = this.listData[this.listData.map(function (e) {
-          return e.who;
-        }).indexOf(this.get('selectedUser'))];
+					self.sendFile(e.target.result);
+				};
+				//And now, read the image and base64
+				reader.readAsDataURL(evt[0]);
+			},
+			triggerFile: function triggerFile() {
+				$('.x-file--input').trigger('click');
+			},
+			sendMessage: function sendMessage(value) {
+				var user = atob(this.get('session.session.content.authenticated.token').split('.')[1]);
+				console.log(user);
+				var message = {};
+				message.msg = value;
+				// Prevent markup from being injected into the message
+				var clientUser = this.listData[this.listData.map(function (e) {
+					return e.who;
+				}).indexOf(this.get('selectedUser'))];
 
-        message.userEmail = clientUser.email;
-        message.username = clientUser.who;
+				message.email = user.email;
+				message.room = clientUser.email;
+				message.username = clientUser.who;
 
-        //socket.emit('stop typing',message);
-        var socket = this.get('socketIOService').socketFor('http://localhost:3001/');
-        socket.emit('support message', message);
-        $('.inputMessage').val('');
-        clientUser.msgs.pushObject({
-          msg: message.msg,
-          type: false
-        });
-        $('.messages').animate({
-          scrollTop: $('.messages').get(0).scrollHeight
-        }, 100);
-        //emit support message to selected user email
-      },
-      joinRoom: function joinRoom(item) {
+				//socket.emit('stop typing',message);
+				var socket = this.get('socketIOService').socketFor('http://172.16.1.168:3001/');
+				socket.emit('support message', message);
+				$('.inputMessage').val('');
+				clientUser.msgs.pushObject({
+					msg: message.msg,
+					type: false
+				});
+				$('.messages').animate({
+					scrollTop: $('.messages').get(0).scrollHeight
+				}, 100);
+				//emit support message to selected user email
+			},
+			joinRoom: function joinRoom(item) {
+				var user = JSON.parse(atob(this.get('session.session.content.authenticated.token').split('.')[1]));
+				console.log(user);
+				console.log(user.name);
+				item.set('connected', true);
 
-        item.set('connected', true);
+				var socket = this.get('socketIOService').socketFor('http://172.16.1.168:3001/');
+				socket.emit('room', {
+					room_name: item.email,
+					email: user.email,
+					username: user.name
+				});
 
-        var socket = this.get('socketIOService').socketFor('http://localhost:3001/');
-        socket.emit('room', {
-          room_name: item.email
-        });
+				// item.unseenMsgs = 0
+				_ember['default'].set(item, 'unseenMsgs', 0);
+				this.set('selectedUser', item.who);
+				$('.messages').animate({
+					scrollTop: $('.messages').get(0).scrollHeight
+				}, 100);
+			},
+			testprotectedApi: function testprotectedApi() {
+				var self = this;
+				var user = this.store.createRecord('user', {
+					name: 'asdfasdf',
+					email: 'asdfasdf'
 
-        // item.unseenMsgs = 0
-        _ember['default'].set(item, 'unseenMsgs', 0);
-        this.set('selectedUser', item.who);
-        $('.messages').animate({
-          scrollTop: $('.messages').get(0).scrollHeight
-        }, 100);
-      },
-      testprotectedApi: function testprotectedApi() {
-        var self = this;
-        var user = this.store.createRecord('user', {
-          name: 'asdfasdf',
-          email: 'asdfasdf'
+				});
+			},
+			socketTest: function socketTest() {
+				var socket = io('http://172.16.1.168:3001');
+				socket.emit('join support', {
+					email: 'support@example.com'
+				});
+				//   socket.emit('addsupport' ,{})
+				socket.on("new_msg", function (data) {
+					addChatMessage(data);
+				});
+				socket.on('message received', function (data) {
 
-        });
-      },
-      socketTest: function socketTest() {
-        var socket = io('http://localhost:3001');
-        socket.emit('join support', {
-          email: 'support@example.com'
-        });
-        //   socket.emit('addsupport' ,{})
-        socket.on("new_msg", function (data) {
-          addChatMessage(data);
-        });
-        socket.on('message received', function (data) {
+					var a = $(".message").filter(function () {
+						return $(this).text() === data.msg;
+					});
+					a.children('img').attr('src', 'images/ic_done_black_24px.svg');
+				});
+				socket.on("user message", function (data) {
 
-          var a = $(".message").filter(function () {
-            return $(this).text() === data.msg;
-          });
-          a.children('img').attr('src', 'images/ic_done_black_24px.svg');
-        });
-        socket.on("user message", function (data) {
-
-          data.user = true;
-          var $chatWindow = $(document.getElementById(data.userEmail));
-          if ($chatWindow.length) {
-            addChatMessage(data);
-          } else {
-            generateChatWindow(data);
-          }
-          socket.emit('userMsg received', data);
-        });
-        socket.on('new user', function (data) {
-          socket.emit('room', {
-            room_name: data.email
-          });
-        });
-        socket.on('joined', function (data) {
-          log('connected');
-        });
-        socket.on('updatechat', function (data1, data2) {
-          log(data1);
-          log(data2);
-        });
-        socket.on('support typing', function (data) {
-          addChatTyping(data);
-        });
-        // Whenever the server emits 'stop typing', kill the typing message
-        socket.on('stop typing', function (data) {
-          removeChatTyping(data);
-        });
-      }
-    }
-  });
+					data.user = true;
+					var $chatWindow = $(document.getElementById(data.userEmail));
+					if ($chatWindow.length) {
+						addChatMessage(data);
+					} else {
+						generateChatWindow(data);
+					}
+					socket.emit('userMsg received', data);
+				});
+				socket.on('new user', function (data) {
+					socket.emit('room', {
+						room_name: data.email
+					});
+				});
+				socket.on('joined', function (data) {
+					log('connected');
+				});
+				socket.on('updatechat', function (data1, data2) {
+					log(data1);
+					log(data2);
+				});
+				socket.on('support typing', function (data) {
+					addChatTyping(data);
+				});
+				// Whenever the server emits 'stop typing', kill the typing message
+				socket.on('stop typing', function (data) {
+					removeChatTyping(data);
+				});
+			}
+		}
+	});
 });
 define('embtest/controllers/login', ['exports', 'ember'], function (exports, _ember) {
   exports['default'] = _ember['default'].Controller.extend({
@@ -6495,11 +6520,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                   "loc": {
                     "source": null,
                     "start": {
-                      "line": 349,
+                      "line": 350,
                       "column": 22
                     },
                     "end": {
-                      "line": 351,
+                      "line": 352,
                       "column": 22
                     }
                   },
@@ -6526,7 +6551,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                   morphs[0] = dom.createAttrMorph(element2, 'src');
                   return morphs;
                 },
-                statements: [["attribute", "src", ["get", "msg.msg", ["loc", [null, [350, 36], [350, 43]]]]]],
+                statements: [["attribute", "src", ["get", "msg.msg", ["loc", [null, [351, 36], [351, 43]]]]]],
                 locals: [],
                 templates: []
               };
@@ -6539,11 +6564,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                   "loc": {
                     "source": null,
                     "start": {
-                      "line": 351,
+                      "line": 352,
                       "column": 22
                     },
                     "end": {
-                      "line": 355,
+                      "line": 356,
                       "column": 22
                     }
                   },
@@ -6575,7 +6600,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                   morphs[0] = dom.createMorphAt(dom.childAt(fragment, [1]), 1, 1);
                   return morphs;
                 },
-                statements: [["content", "msg.msg", ["loc", [null, [353, 10], [353, 21]]]]],
+                statements: [["content", "msg.msg", ["loc", [null, [354, 10], [354, 21]]]]],
                 locals: [],
                 templates: []
               };
@@ -6587,11 +6612,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                 "loc": {
                   "source": null,
                   "start": {
-                    "line": 346,
+                    "line": 347,
                     "column": 16
                   },
                   "end": {
-                    "line": 358,
+                    "line": 359,
                     "column": 16
                   }
                 },
@@ -6632,7 +6657,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                 morphs[2] = dom.createMorphAt(element4, 1, 1);
                 return morphs;
               },
-              statements: [["attribute", "class", ["concat", ["messageLi\t", ["subexpr", "if", [["get", "msg.type", ["loc", [null, [347, 44], [347, 52]]]], "lileft", ""], [], ["loc", [null, [347, 39], [347, 66]]]]]]], ["attribute", "class", ["concat", ["rightbubble message\t", ["subexpr", "if", [["get", "msg.type", ["loc", [null, [348, 57], [348, 65]]]], "leftbubble", ""], [], ["loc", [null, [348, 52], [348, 83]]]], " ", ["subexpr", "if", [["get", "msg.image", ["loc", [null, [348, 89], [348, 98]]]], "imagebubble", ""], [], ["loc", [null, [348, 84], [348, 117]]]]]]], ["block", "if", [["get", "msg.image", ["loc", [null, [349, 28], [349, 37]]]]], [], 0, 1, ["loc", [null, [349, 22], [355, 29]]]]],
+              statements: [["attribute", "class", ["concat", ["messageLi\t", ["subexpr", "if", [["get", "msg.type", ["loc", [null, [348, 44], [348, 52]]]], "lileft", ""], [], ["loc", [null, [348, 39], [348, 66]]]]]]], ["attribute", "class", ["concat", ["rightbubble message\t", ["subexpr", "if", [["get", "msg.type", ["loc", [null, [349, 57], [349, 65]]]], "leftbubble", ""], [], ["loc", [null, [349, 52], [349, 83]]]], " ", ["subexpr", "if", [["get", "msg.image", ["loc", [null, [349, 89], [349, 98]]]], "imagebubble", ""], [], ["loc", [null, [349, 84], [349, 117]]]]]]], ["block", "if", [["get", "msg.image", ["loc", [null, [350, 28], [350, 37]]]]], [], 0, 1, ["loc", [null, [350, 22], [356, 29]]]]],
               locals: ["msg"],
               templates: [child0, child1]
             };
@@ -6644,11 +6669,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
               "loc": {
                 "source": null,
                 "start": {
-                  "line": 345,
+                  "line": 346,
                   "column": 14
                 },
                 "end": {
-                  "line": 359,
+                  "line": 360,
                   "column": 14
                 }
               },
@@ -6671,7 +6696,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
               dom.insertBoundary(fragment, null);
               return morphs;
             },
-            statements: [["block", "each", [["get", "selectedMessages", ["loc", [null, [346, 24], [346, 40]]]]], [], 0, null, ["loc", [null, [346, 16], [358, 25]]]]],
+            statements: [["block", "each", [["get", "selectedMessages", ["loc", [null, [347, 24], [347, 40]]]]], [], 0, null, ["loc", [null, [347, 16], [359, 25]]]]],
             locals: [],
             templates: [child0]
           };
@@ -6684,11 +6709,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
               "loc": {
                 "source": null,
                 "start": {
-                  "line": 359,
+                  "line": 360,
                   "column": 14
                 },
                 "end": {
-                  "line": 365,
+                  "line": 366,
                   "column": 14
                 }
               },
@@ -6734,11 +6759,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             "loc": {
               "source": null,
               "start": {
-                "line": 339,
+                "line": 340,
                 "column": 12
               },
               "end": {
-                "line": 366,
+                "line": 367,
                 "column": 12
               }
             },
@@ -6777,7 +6802,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             dom.insertBoundary(fragment, null);
             return morphs;
           },
-          statements: [["block", "if", [["get", "selectedMessages", ["loc", [null, [345, 20], [345, 36]]]]], [], 0, 1, ["loc", [null, [345, 14], [365, 21]]]]],
+          statements: [["block", "if", [["get", "selectedMessages", ["loc", [null, [346, 20], [346, 36]]]]], [], 0, 1, ["loc", [null, [346, 14], [366, 21]]]]],
           locals: [],
           templates: [child0, child1]
         };
@@ -6790,11 +6815,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             "loc": {
               "source": null,
               "start": {
-                "line": 366,
+                "line": 367,
                 "column": 12
               },
               "end": {
-                "line": 372,
+                "line": 373,
                 "column": 12
               }
             },
@@ -6841,11 +6866,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             "loc": {
               "source": null,
               "start": {
-                "line": 375,
+                "line": 376,
                 "column": 8
               },
               "end": {
-                "line": 384,
+                "line": 385,
                 "column": 8
               }
             },
@@ -6896,7 +6921,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             morphs[2] = dom.createElementMorph(element1);
             return morphs;
           },
-          statements: [["inline", "input", [], ["value", ["subexpr", "@mut", [["get", "firstName", ["loc", [null, [377, 26], [377, 35]]]]], [], []], "class", "inputMessage", "placeholder", "Type a message", "enter", "sendMessage"], ["loc", [null, [377, 12], [377, 107]]]], ["inline", "x-file-input", [], ["name", "files", "multiple", false, "action", ["subexpr", "action", ["imageBuffer"], [], ["loc", [null, [380, 60], [380, 82]]]], "alt", "Choose a File"], ["loc", [null, [380, 10], [380, 104]]]], ["element", "action", ["triggerFile"], [], ["loc", [null, [381, 31], [381, 55]]]]],
+          statements: [["inline", "input", [], ["value", ["subexpr", "@mut", [["get", "firstName", ["loc", [null, [378, 26], [378, 35]]]]], [], []], "class", "inputMessage", "placeholder", "Type a message", "enter", "sendMessage"], ["loc", [null, [378, 12], [378, 107]]]], ["inline", "x-file-input", [], ["name", "files", "multiple", false, "action", ["subexpr", "action", ["imageBuffer"], [], ["loc", [null, [381, 60], [381, 82]]]], "alt", "Choose a File"], ["loc", [null, [381, 10], [381, 104]]]], ["element", "action", ["triggerFile"], [], ["loc", [null, [382, 31], [382, 55]]]]],
           locals: [],
           templates: []
         };
@@ -6908,11 +6933,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           "loc": {
             "source": null,
             "start": {
-              "line": 334,
+              "line": 335,
               "column": 2
             },
             "end": {
-              "line": 387,
+              "line": 388,
               "column": 2
             }
           },
@@ -6971,7 +6996,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           morphs[1] = dom.createMorphAt(element5, 3, 3);
           return morphs;
         },
-        statements: [["block", "if", [["get", "selectedUser", ["loc", [null, [339, 18], [339, 30]]]]], [], 0, 1, ["loc", [null, [339, 12], [372, 19]]]], ["block", "if", [["get", "selectedUser", ["loc", [null, [375, 14], [375, 26]]]]], [], 2, null, ["loc", [null, [375, 8], [384, 15]]]]],
+        statements: [["block", "if", [["get", "selectedUser", ["loc", [null, [340, 18], [340, 30]]]]], [], 0, 1, ["loc", [null, [340, 12], [373, 19]]]], ["block", "if", [["get", "selectedUser", ["loc", [null, [376, 14], [376, 26]]]]], [], 2, null, ["loc", [null, [376, 8], [385, 15]]]]],
         locals: [],
         templates: [child0, child1, child2]
       };
@@ -6990,11 +7015,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                       "loc": {
                         "source": null,
                         "start": {
-                          "line": 403,
+                          "line": 404,
                           "column": 14
                         },
                         "end": {
-                          "line": 407,
+                          "line": 408,
                           "column": 16
                         }
                       },
@@ -7026,7 +7051,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                       morphs[0] = dom.createMorphAt(dom.childAt(fragment, [1]), 1, 1);
                       return morphs;
                     },
-                    statements: [["content", "item.unseenMsgs", ["loc", [null, [405, 18], [405, 37]]]]],
+                    statements: [["content", "item.unseenMsgs", ["loc", [null, [406, 18], [406, 37]]]]],
                     locals: [],
                     templates: []
                   };
@@ -7039,11 +7064,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                       "loc": {
                         "source": null,
                         "start": {
-                          "line": 407,
+                          "line": 408,
                           "column": 16
                         },
                         "end": {
-                          "line": 410,
+                          "line": 411,
                           "column": 14
                         }
                       },
@@ -7081,11 +7106,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                     "loc": {
                       "source": null,
                       "start": {
-                        "line": 401,
+                        "line": 402,
                         "column": 12
                       },
                       "end": {
-                        "line": 411,
+                        "line": 412,
                         "column": 12
                       }
                     },
@@ -7109,7 +7134,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                     dom.insertBoundary(fragment, null);
                     return morphs;
                   },
-                  statements: [["block", "if", [["get", "item.unseenMsgs", ["loc", [null, [403, 20], [403, 35]]]]], [], 0, 1, ["loc", [null, [403, 14], [410, 21]]]]],
+                  statements: [["block", "if", [["get", "item.unseenMsgs", ["loc", [null, [404, 20], [404, 35]]]]], [], 0, 1, ["loc", [null, [404, 14], [411, 21]]]]],
                   locals: [],
                   templates: [child0, child1]
                 };
@@ -7122,11 +7147,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                     "loc": {
                       "source": null,
                       "start": {
-                        "line": 411,
+                        "line": 412,
                         "column": 12
                       },
                       "end": {
-                        "line": 414,
+                        "line": 415,
                         "column": 12
                       }
                     },
@@ -7164,11 +7189,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                   "loc": {
                     "source": null,
                     "start": {
-                      "line": 392,
+                      "line": 393,
                       "column": 10
                     },
                     "end": {
-                      "line": 415,
+                      "line": 416,
                       "column": 10
                     }
                   },
@@ -7222,7 +7247,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                   dom.insertBoundary(fragment, null);
                   return morphs;
                 },
-                statements: [["content", "item.who", ["loc", [null, [395, 6], [395, 18]]]], ["content", "item.email", ["loc", [null, [398, 6], [398, 20]]]], ["block", "if", [["get", "item.connected", ["loc", [null, [401, 18], [401, 32]]]]], [], 0, 1, ["loc", [null, [401, 12], [414, 19]]]]],
+                statements: [["content", "item.who", ["loc", [null, [396, 6], [396, 18]]]], ["content", "item.email", ["loc", [null, [399, 6], [399, 20]]]], ["block", "if", [["get", "item.connected", ["loc", [null, [402, 18], [402, 32]]]]], [], 0, 1, ["loc", [null, [402, 12], [415, 19]]]]],
                 locals: [],
                 templates: [child0, child1]
               };
@@ -7234,11 +7259,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                 "loc": {
                   "source": null,
                   "start": {
-                    "line": 391,
+                    "line": 392,
                     "column": 8
                   },
                   "end": {
-                    "line": 417,
+                    "line": 418,
                     "column": 8
                   }
                 },
@@ -7267,7 +7292,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
                 dom.insertBoundary(fragment, 0);
                 return morphs;
               },
-              statements: [["block", "paper-item", [], ["class", "md-3-line", "action", ["subexpr", "action", ["joinRoom", ["get", "item", ["loc", [null, [392, 68], [392, 72]]]]], [], ["loc", [null, [392, 49], [392, 73]]]]], 0, null, ["loc", [null, [392, 10], [415, 25]]]], ["content", "paper-divider", ["loc", [null, [416, 10], [416, 27]]]]],
+              statements: [["block", "paper-item", [], ["class", "md-3-line", "action", ["subexpr", "action", ["joinRoom", ["get", "item", ["loc", [null, [393, 68], [393, 72]]]]], [], ["loc", [null, [393, 49], [393, 73]]]]], 0, null, ["loc", [null, [393, 10], [416, 25]]]], ["content", "paper-divider", ["loc", [null, [417, 10], [417, 27]]]]],
               locals: ["item"],
               templates: [child0]
             };
@@ -7279,11 +7304,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
               "loc": {
                 "source": null,
                 "start": {
-                  "line": 390,
+                  "line": 391,
                   "column": 6
                 },
                 "end": {
-                  "line": 418,
+                  "line": 419,
                   "column": 6
                 }
               },
@@ -7306,7 +7331,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
               dom.insertBoundary(fragment, null);
               return morphs;
             },
-            statements: [["block", "each", [["get", "listData", ["loc", [null, [391, 16], [391, 24]]]]], [], 0, null, ["loc", [null, [391, 8], [417, 17]]]]],
+            statements: [["block", "each", [["get", "listData", ["loc", [null, [392, 16], [392, 24]]]]], [], 0, null, ["loc", [null, [392, 8], [418, 17]]]]],
             locals: [],
             templates: [child0]
           };
@@ -7319,11 +7344,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
               "loc": {
                 "source": null,
                 "start": {
-                  "line": 418,
+                  "line": 419,
                   "column": 6
                 },
                 "end": {
-                  "line": 424,
+                  "line": 425,
                   "column": 6
                 }
               },
@@ -7369,11 +7394,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             "loc": {
               "source": null,
               "start": {
-                "line": 389,
+                "line": 390,
                 "column": 4
               },
               "end": {
-                "line": 425,
+                "line": 426,
                 "column": 4
               }
             },
@@ -7396,7 +7421,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             dom.insertBoundary(fragment, null);
             return morphs;
           },
-          statements: [["block", "if", [["get", "listData", ["loc", [null, [390, 12], [390, 20]]]]], [], 0, 1, ["loc", [null, [390, 6], [424, 13]]]]],
+          statements: [["block", "if", [["get", "listData", ["loc", [null, [391, 12], [391, 20]]]]], [], 0, 1, ["loc", [null, [391, 6], [425, 13]]]]],
           locals: [],
           templates: [child0, child1]
         };
@@ -7408,11 +7433,11 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           "loc": {
             "source": null,
             "start": {
-              "line": 388,
+              "line": 389,
               "column": 2
             },
             "end": {
-              "line": 426,
+              "line": 427,
               "column": 2
             }
           },
@@ -7435,7 +7460,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
           dom.insertBoundary(fragment, null);
           return morphs;
         },
-        statements: [["block", "paper-list", [], [], 0, null, ["loc", [null, [389, 4], [425, 19]]]]],
+        statements: [["block", "paper-list", [], [], 0, null, ["loc", [null, [390, 4], [426, 19]]]]],
         locals: [],
         templates: [child0]
       };
@@ -7454,7 +7479,7 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
             "column": 0
           },
           "end": {
-            "line": 428,
+            "line": 429,
             "column": 0
           }
         },
@@ -7484,6 +7509,10 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
         dom.appendChild(el0, el1);
         var el1 = dom.createTextNode("\n");
         dom.appendChild(el0, el1);
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n");
+        dom.appendChild(el0, el1);
         var el1 = dom.createElement("div");
         dom.setAttribute(el1, "class", "dashboard");
         var el2 = dom.createTextNode("\n");
@@ -7498,16 +7527,17 @@ define("embtest/templates/dashboard", ["exports"], function (exports) {
         return el0;
       },
       buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-        var element6 = dom.childAt(fragment, [8]);
-        var morphs = new Array(5);
+        var element6 = dom.childAt(fragment, [10]);
+        var morphs = new Array(6);
         morphs[0] = dom.createMorphAt(fragment, 2, 2, contextualElement);
         morphs[1] = dom.createMorphAt(fragment, 4, 4, contextualElement);
         morphs[2] = dom.createMorphAt(fragment, 6, 6, contextualElement);
-        morphs[3] = dom.createMorphAt(element6, 1, 1);
-        morphs[4] = dom.createMorphAt(element6, 2, 2);
+        morphs[3] = dom.createMorphAt(fragment, 8, 8, contextualElement);
+        morphs[4] = dom.createMorphAt(element6, 1, 1);
+        morphs[5] = dom.createMorphAt(element6, 2, 2);
         return morphs;
       },
-      statements: [["block", "paper-button", [], ["class", "login-options", "raised", true, "primary", true, "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [330, 70], [330, 75]]]]], [], []], "action", ["subexpr", "action", ["testprotectedApi"], [], ["loc", [null, [330, 83], [330, 110]]]]], 0, null, ["loc", [null, [330, 0], [330, 147]]]], ["block", "paper-button", [], ["class", "login-options", "raised", true, "primary", true, "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [331, 70], [331, 75]]]]], [], []], "action", ["subexpr", "action", ["socketTest"], [], ["loc", [null, [331, 83], [331, 104]]]]], 1, null, ["loc", [null, [331, 0], [331, 145]]]], ["content", "outlet", ["loc", [null, [332, 0], [332, 10]]]], ["block", "paper-content", [], ["class", "md-whiteframe-z1 list-demo dash chat-window"], 2, null, ["loc", [null, [334, 2], [387, 20]]]], ["block", "paper-content", [], ["class", "md-whiteframe-z1 list-demo dash name-list"], 3, null, ["loc", [null, [388, 2], [426, 20]]]]],
+      statements: [["block", "paper-button", [], ["class", "login-options", "raised", true, "primary", true, "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [330, 70], [330, 75]]]]], [], []], "action", ["subexpr", "action", ["testprotectedApi"], [], ["loc", [null, [330, 83], [330, 110]]]]], 0, null, ["loc", [null, [330, 0], [330, 147]]]], ["block", "paper-button", [], ["class", "login-options", "raised", true, "primary", true, "signup", ["subexpr", "@mut", [["get", "login", ["loc", [null, [331, 70], [331, 75]]]]], [], []], "action", ["subexpr", "action", ["socketTest"], [], ["loc", [null, [331, 83], [331, 104]]]]], 1, null, ["loc", [null, [331, 0], [331, 145]]]], ["content", "outlet", ["loc", [null, [332, 0], [332, 10]]]], ["inline", "log", ["session object", ["get", "session", ["loc", [null, [333, 23], [333, 30]]]]], [], ["loc", [null, [333, 0], [333, 32]]]], ["block", "paper-content", [], ["class", "md-whiteframe-z1 list-demo dash chat-window"], 2, null, ["loc", [null, [335, 2], [388, 20]]]], ["block", "paper-content", [], ["class", "md-whiteframe-z1 list-demo dash name-list"], 3, null, ["loc", [null, [389, 2], [427, 20]]]]],
       locals: [],
       templates: [child0, child1, child2, child3]
     };
@@ -8166,7 +8196,7 @@ catch(err) {
 
 /* jshint ignore:start */
 if (!runningTests) {
-  require("embtest/app")["default"].create({"name":"embtest","version":"0.0.0+ebe2783b"});
+  require("embtest/app")["default"].create({"name":"embtest","version":"0.0.0+3c61d616"});
 }
 /* jshint ignore:end */
 //# sourceMappingURL=embtest.map

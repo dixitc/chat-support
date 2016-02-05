@@ -330,6 +330,7 @@
 {{#paper-button class="login-options" raised=true primary=true signup=login action=(action "testprotectedApi")}}test protected api{{/paper-button}}
 {{#paper-button class="login-options" raised=true primary=true signup=login action=(action "socketTest")}}test socket connection{{/paper-button}}
 {{outlet}}
+{{log 'session object' session}}
 <div class="dashboard">
   {{#paper-content class="md-whiteframe-z1 list-demo dash chat-window" }}
     <ul class="pages">

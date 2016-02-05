@@ -92631,60 +92631,63 @@ define("ember-cli-app-version/templates/app-version", ["exports"], function (exp
   })());
 });
 define('ember-computed-validations/mixins/computed-validations', ['exports', 'ember'], function (exports, _ember) {
-    'use strict';
+  'use strict';
 
-    function _toConsumableArray(arr) {
-        if (Array.isArray(arr)) {
-            for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];return arr2;
-        } else {
-            return Array.from(arr);
-        }
+  function _toConsumableArray(arr) {
+    if (Array.isArray(arr)) {
+      for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];return arr2;
+    } else {
+      return Array.from(arr);
     }
+  }
 
-    exports['default'] = _ember['default'].Mixin.create({
-        initEmberComputedValidations: _ember['default'].on('init', function () {
-            if (!this.computedValidations) {
-                return;
+  exports['default'] = _ember['default'].Mixin.create({
+    initEmberComputedValidations: _ember['default'].on('init', function () {
+      if (!this.computedValidations) {
+        return;
+      }
+
+      var validations = _ember['default'].A();
+
+      var properties = Object.keys(this.computedValidations);
+      for (var i = 0; i < properties.length; i++) {
+        var property = properties[i];
+        var validationsForProperty = Object.keys(this.computedValidations[property]);
+        validations.pushObjects(validationsForProperty);
+      }
+
+      _ember['default'].defineProperty(this, 'computedErrors', _ember['default'].computed.apply(_ember['default'], _toConsumableArray(validations).concat([function () {
+        var _this = this;
+
+        return _ember['default'].Object.create({
+          unknownProperty: function unknownProperty(property) {
+            if (!_this.computedValidations[property]) {
+              return _ember['default'].A();
             }
-            var validations = _ember['default'].A();
-            console.log('computedValidations');
-            console.log(this.computedValidations);
-            var properties = Object.keys(this.computedValidations);
-            for (var i = 0; i < properties.length; i++) {
-                var property = properties[i];
-                var validationsForProperty = Object.keys(this.computedValidations[property]);
-                validations.pushObjects(validationsForProperty);
-            }
-            _ember['default'].defineProperty(this, 'computedErrors', _ember['default'].computed.apply(_ember['default'], _toConsumableArray(validations).concat([function () {
-                var _this = this;
+            var validationsForProperty = Object.keys(_this.computedValidations[property]);
+            return validationsForProperty.reduce(function (errorsForProperty, validationForProperty) {
+              if (!_this.get(validationForProperty)) {
+                var errorMessage = _this.computedValidations[property][validationForProperty];
+                var errorMessageNeedsEvaluated = typeof errorMessage === 'function';
+                errorsForProperty.push(errorMessageNeedsEvaluated ? errorMessage.call(_this) : errorMessage);
+              }
+              return errorsForProperty;
+            }, _ember['default'].A());
+          }
+        });
+      }])));
 
-                return _ember['default'].Object.create({
-                    unknownProperty: function unknownProperty(property) {
-                        if (!_this.computedValidations[property]) {
-                            return _ember['default'].A();
-                        }
-                        var validationsForProperty = Object.keys(_this.computedValidations[property]);
-                        return validationsForProperty.reduce(function (errorsForProperty, validationForProperty) {
-                            if (!_this.get(validationForProperty)) {
-                                var errorMessage = _this.computedValidations[property][validationForProperty];
-                                var errorMessageNeedsEvaluated = typeof errorMessage === 'function';
-                                errorsForProperty.push(errorMessageNeedsEvaluated ? errorMessage.call(_this) : errorMessage);
-                            }
-                            return errorsForProperty;
-                        }, _ember['default'].A());
-                    }
-                });
-            }])));
-            _ember['default'].defineProperty(this, 'computedIsValid', _ember['default'].computed.apply(_ember['default'], _toConsumableArray(validations).concat([function () {
-                var _this2 = this;
+      _ember['default'].defineProperty(this, 'computedIsValid', _ember['default'].computed.apply(_ember['default'], _toConsumableArray(validations).concat([function () {
+        var _this2 = this;
 
-                return validations.every(function (validation) {
-                    return _this2.get(validation);
-                });
-            }])));
-            _ember['default'].defineProperty(this, 'computedIsInvalid', _ember['default'].computed.not('computedIsValid'));
-        })
-    });
+        return validations.every(function (validation) {
+          return _this2.get(validation);
+        });
+      }])));
+
+      _ember['default'].defineProperty(this, 'computedIsInvalid', _ember['default'].computed.not('computedIsValid'));
+    })
+  });
 });
 define('ember-css-transitions/components/transition-group', ['exports', 'ember', 'ember-css-transitions/mixins/transition-mixin'], function (exports, _ember, _emberCssTransitionsMixinsTransitionMixin) {
   'use strict';

@@ -3,3 +3,26 @@ on restore session auth token is not refreshed !important
 handling server errors in login and signup !important
 setting currentuser properly
 initializing socket and injecting it properly
+
+
+//intializers/session
+import Ember from "ember";
+import EASession from "ember-simple-auth/services/session";
+
+export default EASession.extend( {
+  name: "current-user",
+  before: "simple-auth",
+  initialize: function(container) {
+    Session.reopen({
+
+      setCurrentUser: function() {
+        console.log('SETTING CURRENT_USER');
+        if (this.get('isAuthenticated')) {
+          return container.lookup('service:store').queryRecord('user', {me: ''}).then((user) => {
+            this.set('content.currentUser', user);
+          });
+        }
+      }.observes('token')
+    });
+  }
+});
